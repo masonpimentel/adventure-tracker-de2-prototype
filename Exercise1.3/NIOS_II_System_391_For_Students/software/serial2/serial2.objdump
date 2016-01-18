@@ -1031,16 +1031,16 @@ void Init_RS232(void)
 
 01000330 <putcharRS232>:
  *
- * @param: char character - integer to transmit
+ * @param: int character - integer to transmit
  * @return: none
  */
-void putcharRS232(char character)
+void putcharRS232(int character)
 {
  1000330:	defffa04 	addi	sp,sp,-24
  1000334:	dfc00515 	stw	ra,20(sp)
  1000338:	df000415 	stw	fp,16(sp)
  100033c:	df000404 	addi	fp,sp,16
- 1000340:	e13fff05 	stb	r4,-4(fp)
+ 1000340:	e13fff15 	stw	r4,-4(fp)
 	int tx_bit = 0;
  1000344:	e03ffe15 	stw	zero,-8(fp)
 	int status = RS232_Status;
@@ -1120,15 +1120,15 @@ void putcharRS232(char character)
 
 	// write character to the 6850 TxData register to output the character
 	printf("Writing %d to TxData register.\n", character);
- 10003e4:	e17fff07 	ldb	r5,-4(fp)
- 10003e8:	01004074 	movhi	r4,257
- 10003ec:	21346904 	addi	r4,r4,-11868
+ 10003e4:	01004074 	movhi	r4,257
+ 10003e8:	21346904 	addi	r4,r4,-11868
+ 10003ec:	e17fff17 	ldw	r5,-4(fp)
  10003f0:	100052c0 	call	100052c <printf>
 	RS232_TxData =  character;
- 10003f4:	00e10034 	movhi	r3,33792
- 10003f8:	18c08084 	addi	r3,r3,514
- 10003fc:	e0bfff03 	ldbu	r2,-4(fp)
- 1000400:	18800005 	stb	r2,0(r3)
+ 10003f4:	00a10034 	movhi	r2,33792
+ 10003f8:	10808084 	addi	r2,r2,514
+ 10003fc:	e0ffff17 	ldw	r3,-4(fp)
+ 1000400:	10c00005 	stb	r3,0(r2)
 
 	return;
 }
@@ -1140,7 +1140,7 @@ void putcharRS232(char character)
 
 01000418 <getcharRS232>:
  * Writes "character" to the 6850 TxData register.
- * @param: char character - integer to transmit
+ * @param: int character - integer to transmit
  * @return: none
  */
 int getcharRS232(void)
@@ -1236,14 +1236,14 @@ int main()
  10004f4:	dfc00215 	stw	ra,8(sp)
  10004f8:	df000115 	stw	fp,4(sp)
  10004fc:	df000104 	addi	fp,sp,4
-	char character = 4;
+	int character = 4;
  1000500:	00800104 	movi	r2,4
- 1000504:	e0bfff05 	stb	r2,-4(fp)
+ 1000504:	e0bfff15 	stw	r2,-4(fp)
 
 	Init_RS232();
  1000508:	10002f40 	call	10002f4 <Init_RS232>
 	putcharRS232(character);
- 100050c:	e13fff07 	ldb	r4,-4(fp)
+ 100050c:	e13fff17 	ldw	r4,-4(fp)
  1000510:	10003300 	call	1000330 <putcharRS232>
 
 	return 0;

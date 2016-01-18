@@ -86,10 +86,10 @@ void Init_RS232(void)
  * Polls (every 500ms) until it becomes "1".
  * Writes "character" to the 6850 TxData register.
  *
- * @param: char character - integer to transmit
+ * @param: int character - integer to transmit
  * @return: none
  */
-void putcharRS232(char character)
+void putcharRS232(int character)
 {
 	int tx_bit = 0;
 	int status = RS232_Status;
@@ -123,7 +123,7 @@ void putcharRS232(char character)
  * Finds the value of the receive bit in 6850 status register.
  * Polls until it becomes "1".
  * Writes "character" to the 6850 TxData register.
- * @param: char character - integer to transmit
+ * @param: int character - integer to transmit
  * @return: none
  */
 int getcharRS232(void)
@@ -151,7 +151,7 @@ int getcharRS232(void)
 
 int main()
 {
-	char character = 4;
+	int character = 4;
 
 	Init_RS232();
 	putcharRS232(character);

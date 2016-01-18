@@ -98,19 +98,19 @@ Begin
 	
 		if(IOSelect_H = '1') then		-- if Avalon to External Bridge being accessed by CPU
 
--- if address in range hex 8400_020X i.e. 8400_0200 - 8400_020F  i.e. 16 bytes in total even though not all used
+-- if address in range hex 8400_021X i.e. 8400_0210 - 8400_021F  i.e. 16 bytes in total even though not all used
 
-			if((Address(15 downto 4) = X"020") and ByteSelect_L = '0') then	
+			if((Address(15 downto 4) = X"021") and ByteSelect_L = '0') then	
 	
 -- if address is hex 8400_0210 or 8400_0212
 
-			   if((Address(3 downto 0) = X"210") OR (Address(3 downto 0) = X"212")) then	
+			   if((Address(3 downto 0) = X"0") OR (Address(3 downto 0) = X"2")) then	
 					GPS_Port_Enable <= '1' ;		-- enable the ACIA device
 			   end if ;
 				
 -- if address is hex 8400_0214 enable baud rate generator 
 
-				if(Address(3 downto 0) = X"214") then				
+				if(Address(3 downto 0) = X"4") then				
 					GPS_Baud_Enable <= '1' ;
 				end if ;
 			end if ;
@@ -123,44 +123,44 @@ Begin
 
 		if(IOSelect_H = '1') then		-- if Avalon to External Bridge being accessed by CPU
 
--- if address in range hex 8400_020X i.e. 8400_0200 - 8400_020F  i.e. 16 bytes in total even though not all used
+-- if address in range hex 8400_022X i.e. 8400_0220 - 8400_022F  i.e. 16 bytes in total even though not all used
 
-			if((Address(15 downto 4) = X"020") and ByteSelect_L = '0') then	
+			if((Address(15 downto 4) = X"022") and ByteSelect_L = '0') then	
 	
 -- if address is hex 8400_0220 or 8400_0222
 
-			   if((Address(3 downto 0) = X"220") OR (Address(3 downto 0) = X"222")) then	
+			   if((Address(3 downto 0) = X"0") OR (Address(3 downto 0) = X"2")) then	
 					Bluetooth_Port_Enable <= '1' ;		-- enable the ACIA device
 			   end if ;
 				
 -- if address is hex 8400_0224 enable baud rate generator 
 
-				if(Address(3 downto 0) = X"224") then				
+				if(Address(3 downto 0) = X"4") then				
 					Bluetooth_Baud_Enable <= '1' ;
 				end if ;
 			end if ;
 		end if ;
 		
--- decoder for the 4th 6850 chip (Touch Screen)- 2 internal registers at addresses 0x8400_0230 and x8400_0232
+-- decoder for the 4th 6850 chip (Touch Screen)- 2 internal registers at addresses 0x8400_0230 and 0x8400_0232
 -- so that they occupy same half of data bus on D7-D0 and ByteSelect_L = 0
 -- decoder for the Baud Rate generator. 1 internal register at address 0x8400_0234 data on D7-D0
 -- and ByteSelect_L = 0
 		
 		if(IOSelect_H = '1') then		-- if Avalon to External Bridge being accessed by CPU
 
--- if address in range hex 8400_020X i.e. 8400_0200 - 8400_020F  i.e. 16 bytes in total even though not all used
+-- if address in range hex 8400_023X i.e. 8400_0230 - 8400_023F  i.e. 16 bytes in total even though not all used
 
-			if((Address(15 downto 4) = X"020") and ByteSelect_L = '0') then	
+			if((Address(15 downto 4) = X"023") and ByteSelect_L = '0') then	
 	
 -- if address is hex 8400_0230 or 8400_0232
 
-			   if((Address(3 downto 0) = X"230") OR (Address(3 downto 0) = X"232")) then	
+			   if((Address(3 downto 0) = X"0") OR (Address(3 downto 0) = X"2")) then	
 					TouchScreen_Port_Enable <= '1' ;		-- enable the ACIA device
 			   end if ;
 				
--- if address is hex 8400_0204 enable baud rate generator 
+-- if address is hex 8400_0234 enable baud rate generator 
 
-				if(Address(3 downto 0) = X"204") then				
+				if(Address(3 downto 0) = X"4") then				
 					TouchScreen_Baud_Enable <= '1' ;
 				end if ;
 			end if ;
