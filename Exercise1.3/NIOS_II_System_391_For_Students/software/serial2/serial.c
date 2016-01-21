@@ -1,3 +1,5 @@
+//Update January 21 12:26pm
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -103,7 +105,7 @@ void putcharRS232(int character)
 	while(tx_bit == 0)
 	{
 		// sleep(500); // for some reason can't link unistd.h
-		int delay;
+		int delay =0;
 		while (delay < 200000)
 		{
 			delay++;
@@ -151,10 +153,18 @@ int getcharRS232(void)
 
 int main()
 {
-	int character = 4;
+	char character = 0x34;
 
 	Init_RS232();
-	putcharRS232(character);
+
+	while(1) {
+		int delay=0;
+		while (delay < 200000)
+		{
+			delay++;
+		}
+		putcharRS232(character);
+	}
 
 	return 0;
 }
