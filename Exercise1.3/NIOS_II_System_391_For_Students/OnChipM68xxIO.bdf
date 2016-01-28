@@ -2052,11 +2052,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 2360 1032)
-	(pt 1352 1032)
-	(bus)
-)
-(connector
 	(pt 808 416)
 	(pt 1344 416)
 )
@@ -2233,6 +2228,56 @@ applicable agreement for further details.
 	(pt 2008 168)
 	(bus)
 )
+(connector
+	(pt 1696 536)
+	(pt 1704 536)
+	(bus)
+)
+(connector
+	(pt 1704 536)
+	(pt 1704 1032)
+	(bus)
+)
+(connector
+	(pt 1704 1032)
+	(pt 1352 1032)
+	(bus)
+)
+(connector
+	(pt 2080 536)
+	(pt 2152 536)
+	(bus)
+)
+(connector
+	(pt 2152 1032)
+	(pt 2152 536)
+	(bus)
+)
+(connector
+	(pt 2152 1032)
+	(pt 1704 1032)
+	(bus)
+)
+(connector
+	(pt 2480 536)
+	(pt 2560 536)
+	(bus)
+)
+(connector
+	(pt 2560 1032)
+	(pt 2560 536)
+	(bus)
+)
+(connector
+	(pt 2152 1032)
+	(pt 2360 1032)
+	(bus)
+)
+(connector
+	(pt 2360 1032)
+	(pt 2560 1032)
+	(bus)
+)
 (junction (pt 472 384))
 (junction (pt 760 168))
 (junction (pt 1776 80))
@@ -2276,6 +2321,9 @@ applicable agreement for further details.
 (junction (pt 944 280))
 (junction (pt 1392 280))
 (junction (pt 1664 280))
+(junction (pt 1704 1032))
+(junction (pt 2152 1032))
+(junction (pt 2360 1032))
 (text "these inputs can be connected" (rect 1328 1176 1503 1190)(font "Arial" (font_size 8)))
 (text "It should be enabled when the CPU writes (or reads) to location hex 8400_0204. Data in bits 2, 1 and 0 of the data bus is used to set the baud rate" (rect 1032 360 1863 374)(font "Arial" (font_size 8)))
 (text "Interrupt request output from serial port(s)" (rect 1352 1088 1591 1102)(font "Arial" (font_size 8)))
