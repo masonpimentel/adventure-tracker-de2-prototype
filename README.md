@@ -10,13 +10,13 @@ Notes on project management:
 
 For example, if I want to get a C file Mason worked on running on my project...
 
-	1. Make a local directory where the repo will be cloned to
-	2. Clone the repo
-	3. Program your DE2 
-	4. In Eclipse, you'll have your own workspace. But when you add a project (from BSP) a directory in Cpen391Project\QuartusProject\NIOS_II_System_391_For_Students\software will be created. This will only be local - since it is ignored by git, you don't have to worry about these directories overlapping with others
-	5. Get the C file(s) you want from \Cpen391Project\SoftwareFiles 
-	6. Add those file(s) to your own Cpen391Project\QuartusProject\NIOS_II_System_391_For_Students\software directory
-	7. Modify your Quartus, C files as desired
-	8. When it's time to commit, add all the affected files to \Cpen391Project\SoftwareFiles
-	9. This should allow you to make changes to the Quartus project files, and push your C files as well  
+1. Make a local directory where the repo will be cloned to
+2. Clone the repo
+3. Program your DE2 
+4. In Eclipse, you'll have your own workspace. But when you add a project (from BSP) a directory in Cpen391Project\QuartusProject\NIOS_II_System_391_For_Students\software will be created. This will only be local - since it is ignored by git, you don't have to worry about these directories overlapping with others
+5. Get the C file(s) you want from \Cpen391Project\SoftwareFiles 
+6. Add those file(s) to your own Cpen391Project\QuartusProject\NIOS_II_System_391_For_Students\software directory
+7. Modify your Quartus, C files as desired
+8. When it's time to commit, add all the affected files to \Cpen391Project\SoftwareFiles
+9. This should allow you to make changes to the Quartus project files, and push your C files as well  
 
