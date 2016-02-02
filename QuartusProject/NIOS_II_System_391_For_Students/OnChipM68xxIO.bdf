@@ -2249,8 +2249,8 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 2152 1032)
 	(pt 2152 536)
+	(pt 2152 1032)
 	(bus)
 )
 (connector
@@ -2260,12 +2260,12 @@ applicable agreement for further details.
 )
 (connector
 	(pt 2480 536)
-	(pt 2560 536)
+	(pt 2568 536)
 	(bus)
 )
 (connector
-	(pt 2560 1032)
-	(pt 2560 536)
+	(pt 2568 536)
+	(pt 2568 1032)
 	(bus)
 )
 (connector
@@ -2275,7 +2275,7 @@ applicable agreement for further details.
 )
 (connector
 	(pt 2360 1032)
-	(pt 2560 1032)
+	(pt 2568 1032)
 	(bus)
 )
 (junction (pt 472 384))
