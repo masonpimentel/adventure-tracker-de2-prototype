@@ -104,7 +104,38 @@ architecture bhvr of GraphicsController is
 	-- you should only attempt to read/write memory when this signal is '0'
 	
 	signal	OkToDraw_L																			: Std_Logic;
-	 
+	
+	-- registers for bresenhams algorithm
+	signal 	X																						: std_logic_vector(15 downto 0);
+	signal 	Y																						: std_logic_vector(15 downto 0);
+	signal 	dx																						: std_logic_vector(15 downto 0);
+	signal   dy																						: std_logic_vector(15 downto 0);
+	signal   s1																						: std_logic_vector(15 downto 0);
+	signal   s2																						: std_logic_vector(15 downto 0);
+	signal   interchange																			: std_logic_vector(15 downto 0);
+	-- data to be loaded on the rising clock edge
+	signal 	X_Data																				: std_logic_vector(15 downto 0);
+	signal 	X_Load_H																				: std_logic;
+	signal   Y_Data																				: std_logic_vector(15 downto 0);
+	signal 	Y_Load_H																				: std_logic;
+	signal	dx_Data																				: std_logic_vector(15 downto 0);
+	signal 	dx_Load_H																			: std_logic;
+	signal	dy_Data																				: std_logic_vector(15 downto 0);
+	signal 	dy_Load_H																			: std_logic;
+	signal 	s1_Data																				: std_logic_vector(15 downto 0);
+	signal   s1_Load_H																			: std_logic;
+	signal	s2_Data																				: std_logic_vector(15 downto 0);
+	signal   s2_Load_H																			: std_logic;
+	signal   interchange_Data																	: std_logic_vector(15 downto 0);
+	signal 	interchange_Load_H																: std_logic;
+	signal	error																					: std_logic_vector(15 downto 0);
+	signal   error_Data																			: std_logic_vector(15 downto 0);
+	signal   error_Load_H																		: std_logic;
+	
+	signal 	loopCount																			: std_logic_vector(15 downto 0);
+	signal 	loopCount_Data																		: std_logic_vector(15 downto 0);
+	signal 	loopCount_Load_H																	: std_logic;
+	
 -------------------------------------------------------------------------------------------------------------------------------------------------
 -- States and signals for state machine
 -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -124,6 +155,11 @@ architecture bhvr of GraphicsController is
 	constant DrawHline			 	 				: Std_Logic_Vector(7 downto 0) := X"02";		-- State for drawing a Horizontal line
 	constant DrawVline			 	 				: Std_Logic_Vector(7 downto 0) := X"03";		-- State for drawing a Vertical line
 	constant DrawLine				 	 				: Std_Logic_Vector(7 downto 0) := X"04";		-- State for drawing any line
+	constant DrawLine1								: Std_Logic_Vector(7 downto 0) := X"0B";
+	constant DrawLine2								: Std_Logic_Vector(7 downto 0) := X"0C";
+	constant DrawLine3								: Std_Logic_Vector(7 downto 0) := X"0D";
+	constant DrawLine4								: Std_Logic_Vector(7 downto 0) := X"0E";
+	constant DrawLine5								: Std_Logic_Vector(7 downto 0) := X"0F";
 	constant DrawPixel							 	: Std_Logic_Vector(7 downto 0) := X"05";		-- State for drawing a pixel
 	constant ReadPixel							 	: Std_Logic_Vector(7 downto 0) := X"06";		-- State for reading a pixel
 	constant ReadPixel1							 	: Std_Logic_Vector(7 downto 0) := X"07";		-- State for reading a pixel
@@ -269,6 +305,11 @@ Begin
 		if(Reset_L = '0') then
 			X1 <= X"0000" ;
 		elsif(rising_edge(Clk)) then
+			if(CurrentState = DrawHLine) then
+				if(OKToDraw_L = '0') then
+					X1 <= X1 + '1';
+				end if;
+			end if;
 			if(X1_Select_H = '1') then	
 				if(UDS_L = '0') then
 					X1(15 downto 8) <= DataInFromCPU(15 downto 8);
@@ -292,6 +333,11 @@ Begin
 		if(Reset_L = '0') then
 			Y1 <= X"0000" ;
 		elsif(rising_edge(Clk)) then
+			if(CurrentState = DrawVline) then
+				if(OKToDraw_L = '0') then
+					Y1 <= Y1 + '1';
+				end if;
+			end if;
 			if(Y1_Select_H = '1') then
 				if(UDS_L = '0') then
 					Y1(15 downto 8) <= DataInFromCPU(15 downto 8);
@@ -465,13 +511,117 @@ Begin
 	
 		end if; 
 	end process;
+----------------------------------------------------------------------------------------------------------------------
+-- Latch in Data to X register
+----------------------------------------------------------------------------------------------------------------------
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				x<=X"0000";
+		elsif rising_edge(clk) then
+			if(x_Load_H = '1') then
+				x<=X_Data;
+			end if;
+		end if;
+	end process;
+
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				y<=X"0000";
+		elsif rising_edge(clk) then
+			if(y_Load_H = '1') then
+				y<=y_Data;
+			end if;
+		end if;
+	end process;
 	
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				dx<=X"0000";
+		elsif rising_edge(clk) then
+			if(dx_Load_H = '1') then
+				dx<=dx_Data;
+			end if;
+		end if;
+	end process;
+	
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				dy<=X"0000";
+		elsif rising_edge(clk) then
+			if(dy_Load_H = '1') then
+				dy<=dy_Data;
+			end if;
+		end if;
+	end process;
+
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				s1<=X"0000";
+		elsif rising_edge(clk) then
+			if(s1_Load_H = '1') then
+				s1<=s1_Data;
+			end if;
+		end if;
+	end process;
+
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				s2<=X"0000";
+		elsif rising_edge(clk) then
+			if(s2_Load_H = '1') then
+				s2<=s2_Data;
+			end if;
+		end if;
+	end process;
+
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				interchange<=X"0000";
+		elsif rising_edge(clk) then
+			if(interchange_Load_H = '1') then
+				interchange<=interchange_Data;
+			end if;
+		end if;
+	end process;
+	
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				error<=X"0000";
+		elsif rising_edge(clk) then
+			if(error_Load_H = '1') then
+				error<=error_Data;
+			end if;
+		end if;
+	end process;
+	
+	process(clk, Reset_L)
+	begin
+		if(Reset_L = '0') then
+				loopCount<=X"0000";
+		elsif rising_edge(clk) then
+			if(loopCount_Load_H = '1') then
+				loopCount<=loopCount_Data;
+			end if;
+		end if;
+	end process;
 ---------------------------------------------------------------------------------------------------------------------
 -- next state and output logic
 ----------------------------------------------------------------------------------------------------------------------	
 	
 	process(CurrentState, CommandWritten_H, Command, X1, X2, Y1, Y2, Colour, OKToDraw_L, VSync_L,
-				BackGroundColour, AS_L, Sram_DataIn, CLK, Colour_Latch)
+				BackGroundColour, AS_L, Sram_DataIn, CLK, Colour_Latch, y, x, dy, dx, s1, s2, loopCount, error, interchange)
+				
+	variable x2Minusx1 : std_logic_vector(15 downto 0);
+	variable y2Minusy1 : std_logic_vector(15 downto 0);
+
 	begin
 	
 	----------------------------------------------------------------------------------------------------------------------------------
@@ -501,6 +651,30 @@ Begin
 		Sig_ColourPalletteData			<= X"00000000" ;		-- default 00RRGGBB value to the colour pallette
 		Sig_ColourPallette_WE_H			<= '0'; 					-- default is NO write to the colour pallette
 		
+		
+		X_Load_H								<= '0';
+		X_Data								<= X"0000";
+		Y_Load_H								<= '0';
+		Y_Data								<= X"0000";
+		dx_Load_H							<= '0';
+		dx_Data								<= X"0000";
+		dy_Load_H							<= '0';
+		dy_Data								<= X"0000";
+		s1_Load_H							<= '0';
+		s1_Data								<= X"0000";
+		s2_Load_H							<= '0';
+		s2_Data								<= X"0000";
+		interchange_Load_H				<= '0';
+		interchange_Data					<= X"0000";
+		error_Load_H						<= '0';
+		error_Data							<= X"0000";
+		x2Minusx1							:= X"0000";
+		y2Minusy1							:= X"0000";
+		
+		loopCount_Data						<= X"0000";
+		loopCount_Load_H					<= '0';
+		
+
 		-------------------------------------------------------------------------------------
 		-- IMPORTANT we have to define what the default NEXT state will be. In this case we the state machine
 		-- will return to the IDLE state unless we override this with a different one
@@ -682,23 +856,178 @@ Begin
 			NextState <= IDLE;
 			
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-		elsif(CurrentState = DrawHline) then
+		elsif(CurrentState = DrawHLine) then
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-			-- TODO in your project
-			NextState <= IDLE;
+			if(OKToDraw_L = '0') then														-- if VGA is not displaying at this time, then we can draw, otherwise wait for video blanking during Hsync
+
+				-- X1 is incremeted in the X1 process
+				Sig_AddressOut 	<= Y1(8 downto 0) & X1(9 downto 1);				
+				Sig_RW_Out			<= '0';													
+				
+				if(X1(0) = '0')	then														
+					Sig_UDS_Out_L 	<= '0';													
+				else
+					Sig_LDS_Out_L 	<= '0';													
+				end if;
+				
+
+				if(X1 >= X2) then
+					NextState <= IDLE;
+				else
+					NextState <= DrawHLine;		
+				end if;
+			else
+				NextState <= DrawHLine;	-- stay here if we arent in a hsync period. X1 process also checks this condition
+			end if ;
 				
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		elsif(CurrentState = DrawVline) then
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------		
-			-- TODO in your project
-			NextState <= IDLE;
+			if(OKToDraw_L = '0') then														
+			
+				--Y1 is incremented in the Y1 process on each rising clock edge if we are in the DrawVLine state
+				Sig_AddressOut 	<= Y1(8 downto 0) & X1(9 downto 1);				
+				Sig_RW_Out			<= '0';													
+				
+				if(X1(0) = '0')	then														
+					Sig_UDS_Out_L 	<= '0';													
+				else
+					Sig_LDS_Out_L 	<= '0';													
+				end if;
+				
+				-- return to idle state once Y1 Address is equal to the target address
+				if(Y1 >= Y2) then
+					NextState <= IDLE;
+				else
+					NextState <= DrawVline;		
+				end if;
+			else
+				NextState <= DrawVline;	-- stay in this state if we arent in a horizontal sync period. Y1 process also checks this condition
+			end if ;
 			
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		-- load in initial register values
 		elsif(CurrentState = DrawLine) then
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------		
-			-- TODO in your project
-			NextState <= IDLE;
+			x_Data <= X1;
+			y_Data <= Y1;
 			
+			x2Minusx1 := X2 - X1;
+			y2Minusy1 := Y2 - Y1;
+			
+			dx_Data <= abs(signed(x2Minusx1));
+			dy_Data <= abs(signed(y2Minusy1));
+			
+			if(x2Minusx1 < 0) then
+				s1_Data <= X"FFFF";
+			elsif(x2Minusx1 = 0) then
+				s1_Data <= X"0000";
+			else
+				s1_Data <= X"0001";
+			end if;
+			
+			if(y2Minusy1 < 0) then
+				s2_Data <= X"FFFF";
+			elsif(y2Minusy1 = 0) then
+				s2_Data <= X"0000";
+			else
+				s2_Data <= X"0001";
+			end if;
+			
+			interchange_Data <= X"0000";
+			
+			X_Load_H <= '1';
+			Y_Load_H <= '1';
+			dx_Load_H <= '1';
+			dy_Load_H <= '1';
+			s1_Load_H <= '1';
+			s2_Load_H <= '1';
+			interchange_Load_H <= '1';
+			
+			
+			NextState <= DrawLine1;
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+		-- swap x and y depending on slope of line, and move on to next state
+		elsif (CurrentState = DrawLine1) then
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+			if (dy > dx) then
+				dy_Data <= dx;
+				dx_Data <= dy;
+				dy_Load_H <= '1';
+				dx_Load_H <= '1';
+				interchange_Data <= X"0001";
+				interchange_Load_H <= '1';
+			end if;
+			NextState <= DrawLine2;
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+		-- initialize error term to compensate for non zero intercept
+		elsif (CurrentState = DrawLine2) then
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+			error_Data <= (dy(14 downto 0) & '0') - dx;
+			error_Load_H <= '1';
+			loopCount_Data <= X"0001";
+			loopCount_Load_H <= '1';
+			NextState <= DrawLine3;
+----------------------------------------------------------------------------------------------------------------------------------------------------------	
+		-- main loop
+		elsif (CurrentState = DrawLine3) then
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+			if(loopCount > dx) then
+				NextState <= IDLE;
+			
+			elsif(OKToDraw_L = '1') then
+				NextState <= DrawLine3;
+			else
+				-- write a pixel
+				Sig_AddressOut 	<= y(8 downto 0) & x(9 downto 1);				
+				Sig_RW_Out			<= '0';													
+				
+				if(x(0) = '0')	then														
+					Sig_UDS_Out_L 	<= '0';													
+				else
+					Sig_LDS_Out_L 	<= '0';													
+				end if;
+				
+				loopCount_Data <= loopCount + 1;
+				loopCount_Load_H <= '1';
+				
+				NextState <= DrawLine4;
+			
+			end if;
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------		
+		elsif (CurrentState = DrawLine4) then
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------			
+			if(error < 0) then
+				NextState <= DrawLine5;
+			else
+				if(interchange = X"0001") then
+					x_Data <= x + s1;
+					x_Load_H <= '1';
+				else
+					y_Data <= y + s2;
+					y_Load_H <= '1';
+				end if;
+			
+				error_Data <= error - (dx(14 downto 0) & '0');
+				error_Load_H <= '1';
+				NextState <= DrawLine4;
+			end if;
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+		elsif (CurrentState = DrawLine5) then
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+			if(interchange = X"0001") then
+				y_Data <= y + s2;
+				y_Load_H <= '1';
+			else
+				x_Data <= x + s1;
+				x_Load_H <= '1';
+			end if;
+			
+			error_Data <= error + (dy(14 downto 0) & '0');
+			error_Load_H <= '1';
+
+			NextState <= DrawLine3;
+				
 		end if ;
 	end process;	
 end;
