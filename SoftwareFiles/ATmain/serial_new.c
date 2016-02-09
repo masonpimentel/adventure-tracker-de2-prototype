@@ -9,11 +9,6 @@
 #define RS232_RxData (*(volatile unsigned char *)(0x84000202))
 #define RS232_Baud (*(volatile unsigned char *)(0x84000204))
 
-//#define Touch_RX (*(volatile unsigned char *)(0x84000232))
-//#define Touch_TX (*(volatile unsigned char *)(0x84000232))
-//#define Touch_Control (*(volatile unsigned char *)(0x84000230))
-//#define Touch_Status (*(volatile unsigned char *)(0x84000230))
-//#define Touch_Baud (*(volatile unsigned char *)(0x84000234))
 
 /* Set up 6850 control register to utilise a divide by 16 clock,
  * RTS low, use 8 bits of data, no parity, 1 stop bit, transmitter

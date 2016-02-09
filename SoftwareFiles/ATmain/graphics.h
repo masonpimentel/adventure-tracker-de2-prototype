@@ -57,10 +57,12 @@ void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, int colour);
 void Rectangle(int x1, int y1, int x2, int y2, int colour);
 
 
-void DrawString(int x1, int y1, char* string, int strlen, int colour);
+void DrawString(int x1, int y1, char* string, int strlen, int fontcolour, int backgroundcolour);
 
 
 void DrawButton(int x1, int y1, int x2, int y2, char* string, int strlen, int fontcolour, int backgroundcolour);
+
+void TriangleTest(void);
 
 
 /*

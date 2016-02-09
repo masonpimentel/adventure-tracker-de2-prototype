@@ -24,6 +24,13 @@ Point GetPress(void);
 
 Point GetRelease(void);
 
+int ScreenTouched(void);
+
+int transmit_bit(int reg);
+
+void print_binary(int dec);
+
+
 
 
 

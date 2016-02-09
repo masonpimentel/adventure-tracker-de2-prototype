@@ -161,13 +161,19 @@ void Triangle(int x1, int y1, int x2, int y2, int x3, int y3, int colour)
     Line(x1, y1, x3, y3, colour);
 }  
     
-void DrawString(int x1, int y1, char* string, int strlen, int colour)
+void DrawString(int x1, int y1, char* string, int strlen, int fontcolour, int backgroundcolour)
 {
+	if(string == NULL)
+	{
+		return;
+	}
+
 	y1 = y1-7;
+
 	int i;
 	for(i=0; i<strlen ; i++)
 	{
-		OutGraphicsCharFont2a(x1+i*FONT2_XPIXELS, y1, colour, WHITE, string[i], 0);
+		OutGraphicsCharFont2a(x1+i*FONT2_XPIXELS, y1, fontcolour, backgroundcolour, string[i], 1);
 	}
 }
 
@@ -196,7 +202,7 @@ void DrawButton(int x1, int y1, int x2, int y2, char* string, int strlen, int fo
 	string_x -= strlen/2 * FONT2_XPIXELS;
 
 	FilledRectangle(x1, y1, x2, y2, backgroundcolour);
-	DrawString(string_x, string_y, string, strlen, fontcolour);
+	DrawString(string_x, string_y, string, strlen, fontcolour, backgroundcolour);
 
 }
 
@@ -204,35 +210,34 @@ void DrawButton(int x1, int y1, int x2, int y2, char* string, int strlen, int fo
 void TriangleTest()
 {
 	int j = 0;
-	while(1)
+
+	int i;
+	for(i=0; i<400; i++)
 	{
-		int i;
-		for(i=0; i<400; i++)
-		{
-			if(j%2 == 0)
-				Triangle(i, 1, 400, 480, 800-i, 0, i%256);
-			else
-				Triangle(i, 1, 400, 480, 800-i, 0, (256-i)%256);
+		if(j%2 == 0)
+			Triangle(i, 1, 400, 480, 800-i, 0, i%256);
+		else
+			Triangle(i, 1, 400, 480, 800-i, 0, (256-i)%256);
 
-		}
-		for(i=0; i<400; i++)
-		{
-			if(j%2 == 0)
-				Triangle(i, 480, 400, 0, 800-i, 480, i);
-			else
-				Triangle(i, 480, 400, 0, 800-i, 480, 256-i);
+	}
+	for(i=0; i<400; i++)
+	{
+		if(j%2 == 0)
+			Triangle(i, 480, 400, 0, 800-i, 480, i);
+		else
+			Triangle(i, 480, 400, 0, 800-i, 480, 256-i);
 
-		}
-		for(i=0; i<240; i++)
-		{
-			if(j%2 == 0)
-				Triangle(0, i, 400, 480, 0, 240-i, i%256);
-			else
-				Triangle(0, i, 400, 480, 0, 2, (256-i)%256);
+	}
+	for(i=0; i<240; i++)
+	{
+		if(j%2 == 0)
+			Triangle(0, i, 400, 480, 0, 240-i, i%256);
+		else
+			Triangle(0, i, 400, 480, 0, 2, (256-i)%256);
 
-		}
-		for(i=0; i<240; i++)
-		{
+	}
+	for(i=0; i<240; i++)
+	{
 			if(j%2 == 0)
 				Triangle(i, 480, 400, 0, 800-i, 480, i);
 			else
@@ -240,7 +245,7 @@ void TriangleTest()
 
 		}
 		j++;
-	}
+
 }
 
 

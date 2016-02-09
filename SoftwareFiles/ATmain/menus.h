@@ -19,6 +19,7 @@ typedef enum
 {
 	MAINMENU,
 	NEWTRIP,
+	EASTEREGGS,
 } Menus;
 
 
