@@ -1,0 +1,21 @@
+# General Quartus generated files:
+**/db/**
+**/incremental_db/**
+**/output_files/output_files/**
+*.bak
+**/obj/**
+*.qws
+**/nios_system/**
+*.rpt
+*.sopcinfo
+*.html
+# Vim files
+*.swo
+*.swp
+*.swn
+# Software files
+*.o
+*.elf
+*.map
+libhal_bsp.a
+*.objdump
