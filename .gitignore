@@ -5,6 +5,10 @@
 *.bak
 **/obj/**
 *.qws
+*.done
+*.sof
+*.summary
+*.jdi
 **/nios_system/**
 *.rpt
 *.sopcinfo
