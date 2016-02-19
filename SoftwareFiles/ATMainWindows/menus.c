@@ -16,8 +16,12 @@
 #include <time.h>
 
 int redraw = 1;
+int log = 0;
+int initial = 1;
 
-
+////////////////////////////////////////////////////////////////////////////////////////
+//DRAWING
+////////////////////////////////////////////////////////////////////////////////////////
 void DrawMainMenu()
 {
 	FilledRectangle(0, 0, 800, 480, DARK_GREEN);
@@ -25,13 +29,25 @@ void DrawMainMenu()
 	DrawButton(50, 50, 375, 225, "Past Trips", sizeof("Past Trips")-1, BLACK, SADDLE_BROWN);
 	DrawButton(50, 255, 375, 430, "Easter Eggs", sizeof("Easter Eggs")-1, BLACK, SADDLE_BROWN);
 	DrawButton(400, 50, 750, 430, "New Trip", sizeof("New Trip")-1, BLACK, SADDLE_BROWN);
+}
 
+void DrawGpsLabels()
+{
+	DrawString(60,65,"Time: ", sizeof("Time: ")-1, BLACK, GRAY);
+	DrawString(60, 155, "Latitude: ", sizeof("Latitude: ")-1,BLACK, GRAY);
+	DrawString(60, 250, "Longitude: ", sizeof("Longitude: ")-1, BLACK, GRAY);
+	DrawString(60, 345, "Altitude: ", sizeof("Altitude: ")-1, BLACK, GRAY);
+	DrawString(220, 160, "Current Trip: ", sizeof("Current Trip: ")-1, NAVY, GRAY);
+}
 
+void DrawTripLabels()
+{
+	DrawString(60,225,"Start: ", sizeof("Start: ")-1, BLACK, GRAY);
+	DrawString(60, 325, "End: ", sizeof("End: ")-1,BLACK, GRAY);
 }
 
 void DrawPastTrips()
 {
-
 	/* set the screen background */
 	FilledRectangle(0,0,800,480, DARK_GREEN);
 	DrawButton(0, 0, 800, 40, "Past Trips", sizeof ("Past Trips"), WHITE, BLACK);
@@ -54,12 +70,51 @@ void DrawPastTrips()
 	redraw = 0;
 }
 
-void DrawTripLabels()
+////////////////////////////////////////////////////////////////////////////////////////
+//DATA
+////////////////////////////////////////////////////////////////////////////////////////
+void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* log)
 {
-	DrawString(60,225,"Start: ", sizeof("Start: ")-1, BLACK, GRAY);
-	DrawString(60, 325, "End: ", sizeof("End: ")-1,BLACK, GRAY);
+	DrawString(80, 85, time, strlen(time), BLACK, GRAY);
+	DrawString(80, 175, latitude, strlen(latitude), BLACK, GRAY);
+	DrawString(80, 270, longitude, strlen(longitude), BLACK, GRAY);
+	DrawString(80, 365, altitude, strlen(altitude), BLACK, GRAY);
+	DrawString(240, 180, log, strlen(log), BLACK, GRAY);
 }
 
+void DrawTripData()
+{
+	char logname[20];
+
+	sprintf(logname, "log%d", log);
+	printf("logname in DrawTripData = %s\n", logname);
+	DrawString(125, 175, logname, strlen(logname), BLUE, GRAY);
+
+	char start[256] = "\0";
+	char start2[256] = "\0";
+	char start3[256] = "\0";
+	char end[256] = "\0";
+	char end2[256] = "\0";
+	char end3[256] = "\0";
+
+	firstLogEntry(log, start, 1);
+	firstLogEntry(log, start2, 2);
+	firstLogEntry(log, start3, 3);
+	lastLogEntry(log, end, 1);
+	lastLogEntry(log, end2, 2);
+	lastLogEntry(log, end3, 3);
+
+	DrawString(80, 245, start, strlen(start), BLACK, GRAY);
+	DrawString(80, 265, start2, strlen(start2), BLACK, GRAY);
+	DrawString(80, 285, start3, strlen(start3), BLACK, GRAY);
+	DrawString(80, 345, end, strlen(end), BLACK, GRAY);
+	DrawString(80, 365, end2, strlen(end2), BLACK, GRAY);
+	DrawString(80, 385, end3, strlen(end3), BLACK, GRAY);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+//CHANGING PAGES
+////////////////////////////////////////////////////////////////////////////////////////
 void GetNextMenu(Point p)
 {
 	switch (current_menu_val)
@@ -81,12 +136,13 @@ void GetNextMenu(Point p)
 						(p.y > 50) && (p.y < 225))
 			{
 				current_menu_func = &PastTrips;
+				redraw = 1;
 			}
 			break;
 
 		case (NEWTRIP):
-			if((p.x > PAST_TRIP_BACK_X1) && (p.x < PAST_TRIP_BACK_X2) &&
-			   (p.y > PAST_TRIP_BACK_Y1) && (p.y < PAST_TRIP_BACK_Y2))
+			if((p.x > NEWTRIP_BACK_X1) && (p.x < NEWTRIP_BACK_X2) &&
+			   (p.y > NEWTRIP_BACK_Y1) && (p.y < NEWTRIP_BACK_Y2))
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
@@ -102,8 +158,8 @@ void GetNextMenu(Point p)
 			break;
 
 		case (PASTTRIPS):
-			if((p.x > 0) && (p.x < 800) &&
-			   (p.y > 0) && (p.y < 480))
+			if((p.x > PAST_TRIP_BACK_X1) && (p.x < PAST_TRIP_BACK_X2) &&
+					(p.y > PAST_TRIP_BACK_Y1) && (p.y < PAST_TRIP_BACK_Y2))
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
@@ -114,6 +170,42 @@ void GetNextMenu(Point p)
 			break;
 	}
 }
+
+//this is for switching logs in past trips
+void PrevNext(Point p, int maxLogs)
+{
+		//prev
+		if((p.x > PREV_X1) && (p.x < PREV_X2) &&
+				(p.y > PREV_Y1) && (p.y < PREV_Y2))
+		{
+			current_menu_func = &PastTrips;
+			if (log <= 0) {
+				log = log - 0;
+			}
+			else
+				log--;
+			redraw = 1;
+		}
+
+		//next
+		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
+			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
+		{
+			current_menu_func = &PastTrips;
+			if (log >= maxLogs - 1) {
+				log = log + 0;
+			}
+			else
+				log++;
+			redraw = 1;
+		}
+		else
+			return;
+
+}
+////////////////////////////////////////////////////////////////////////////////////////
+//PAGES
+////////////////////////////////////////////////////////////////////////////////////////
 
 void MainMenu()
 {
@@ -148,30 +240,42 @@ void PastTrips()
 {
 	current_menu_val = PASTTRIPS;
 	int i;
-	DrawPastTrips();
+	int num;
+	char *firstEntry;
+	char *lastEntry;
+	int prevNext;
+	int maxLogs;
+	Point p;
 
-	Point p = GetRelease();
+	//need to find the most recent logfile
+	maxLogs = lastLog();
+	printf("number of logs = %d\n", log);
+
+	if (initial == 1) {
+		initial = 0;
+		log = maxLogs-1;
+	}
+
+	/* delay for debouncing screen */
+	for(i=0; i<1000; i++);
+
+	if (redraw==1) {
+		DrawPastTrips();
+	}
+	DrawTripData();
+
+	while(1) {
+		if (ScreenTouched()){
+			goto touched2;
+
+		}
+	}
+
+touched2:
+	p = GetRelease();
+	PrevNext(p, maxLogs);
 	GetNextMenu(p);
 	current_menu_func();
-}
-
-/* this is where we are going to poll the GPS and print the coordinates to screen */
-
-void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude)
-{
-	DrawString(80, 85, time, strlen(time), BLACK, GRAY);
-	DrawString(80, 175, latitude, strlen(latitude), BLACK, GRAY);
-	DrawString(80, 270, longitude, strlen(longitude), BLACK, GRAY);
-	DrawString(80, 365, altitude, strlen(altitude), BLACK, GRAY);
-}
-
-void DrawGpsLabels()
-{
-	DrawString(60,65,"Time: ", sizeof("Time: ")-1, BLACK, GRAY);
-	DrawString(60, 155, "Latitude: ", sizeof("Latitude: ")-1,BLACK, GRAY);
-	DrawString(60, 250, "Longitude: ", sizeof("Longitude: ")-1, BLACK, GRAY);
-	DrawString(60, 345, "Altitude: ", sizeof("Altitude: ")-1, BLACK, GRAY);
-	DrawString(220, 160, "Current Trip: ", sizeof("Current Trip: ")-1, NAVY, GRAY);
 }
 
 void NewTrip()
@@ -218,11 +322,15 @@ void NewTrip()
 	char * gpsdat;
 
 	char temp[256];
+
+	//DEBUG
 	int iteration = 0;
 	int log = 0;
+	//DEBUG
+
 	while(1)
 	{
-
+		//DEBUG
 		printf("iteration = %d\n", iteration);
 		int r2 = rand()%100;
 		printf("r2 = %d\n", r2);
@@ -233,10 +341,9 @@ void NewTrip()
 			iteration = 0;
 		}
 		printf("log = %d\n", log);
-
-		//DEBUG
 		int r = rand() % 10;
 		printf("random = %d\n", r);
+		//DEBUG
 
 		char temptime[256] = "Time: 3:3";
 		char time[256];
@@ -275,7 +382,11 @@ void NewTrip()
 		strcpy(temp, gpsdat);
 		extractGpsAltitude(temp,  altitude);
 		printf("%s\n", altitude);
-		DrawGpsData(time, latitude, longitude, altitude);
+
+		char logname[20];
+		sprintf(logname, "log%d", log);
+
+		DrawGpsData(time, latitude, longitude, altitude, logname);
 
 		iteration++;
 

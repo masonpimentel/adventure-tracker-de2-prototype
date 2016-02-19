@@ -121,6 +121,197 @@ void readFromSd(int log, int entry) {
 
 }
 
+/*
+ * Finds out the number of entries in a logfile
+ *
+ * @param: log - the logfile being read from
+ * @return: entries - the number of entries in the logfile
+ */
+int numEntries(int log) {
+	short int myFileHandle;
+	int i;
+	char character = 'a';
+	int entries = 0;
+
+	char logname[20];
+
+	sprintf(logname, "log%d.txt", log);
+	printf("logname in numEntries = %s\n", logname);
+
+	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
+
+		while (character > 0) {
+			while(character != 'x') {
+				character = alt_up_sd_card_read(myFileHandle);
+			}
+			entries++;
+			character = alt_up_sd_card_read(myFileHandle);
+			if (character > 0) {
+				//set it to anything but 'x'
+				character = 'a';
+			}
+		}
+		alt_up_sd_card_fclose(myFileHandle);
+
+	}
+	else
+		printf("File not opened for reading\n");
+
+	return entries;
+
+}
+
+/*
+ * Puts the last entry in a string
+ *
+ * @param: log - the logfile being read from
+ * @param: end - the end string
+ * @param: part - 1 for the first half of the string, 2 for the second half of the string
+ */
+void lastLogEntry(int log, char* end, int part) {
+	int toSeek = numEntries(log) - 1;
+
+	short int myFileHandle;
+	int i;
+	char character = 'a';
+	int entries = 0;
+
+	char logname[20];
+	//char returnEntry[256] = "\0";
+
+	sprintf(logname, "log%d.txt", log);
+	printf("logname in seekToLast = %s\n", logname);
+
+	int toSkip = (part-1) * MAX_STRING_LENGTH;
+	int divider = 0;
+
+	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
+
+		//seek through all the 'x's
+		for (i=0; i<toSeek; i++) {
+			while(character != 'x') {
+				character = alt_up_sd_card_read(myFileHandle);
+			}
+			i++;
+		}
+		character = 'a';
+
+		if (part == 1) {
+			while (character != 'x' && divider < MAX_STRING_LENGTH){
+				char charHolder[2] = "\0";
+				character = alt_up_sd_card_read(myFileHandle);
+				if (character != 'x') {
+					charHolder[0] = character;
+					//printf("(f)should be putting in %s\n", charHolder);
+					strcat(end,charHolder);
+				}
+				divider++;
+			}
+		}
+		else {
+			int skip;
+			//need to skip to where first half left off
+			for (skip = 0; skip < toSkip; skip++) {
+				character = alt_up_sd_card_read(myFileHandle);
+			}
+			while (character != 'x' && divider < MAX_STRING_LENGTH){
+				char charHolder[2] = "\0";
+				character = alt_up_sd_card_read(myFileHandle);
+				if (character != 'x') {
+					charHolder[0] = character;
+					strcat(end,charHolder);
+				}
+				divider++;
+			}
+		}
+		alt_up_sd_card_fclose(myFileHandle);
+	}
+	else
+		printf("File not opened for reading\n");
+
+	return;
+
+}
+
+/*
+ * Puts the first entry in a string
+ *
+ * @param: log - the logfile being read from
+ * @param: start - the start string
+ * @param: part - 1 for the first half of the string, 2 for the second etc.
+ */
+void firstLogEntry(int log, char* start, int part) {
+	short int myFileHandle;
+	int i;
+	char character = 'a';
+	int entries = 0;
+
+	char logname[20];
+
+	sprintf(logname, "log%d.txt", log);
+
+	int toSkip = (part-1) * MAX_STRING_LENGTH;
+	int divider = 0;
+
+	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
+
+		if (part == 1) {
+			while (character != 'x' && divider < MAX_STRING_LENGTH){
+				char charHolder[2] = "\0";
+				character = alt_up_sd_card_read(myFileHandle);
+				if (character != 'x') {
+					charHolder[0] = character;
+					strcat(start,charHolder);
+				}
+				divider++;
+			}
+		}
+		else {
+			int skip;
+			//need to skip to where first half left off
+			for (skip = 0; skip < toSkip; skip++) {
+				character = alt_up_sd_card_read(myFileHandle);
+			}
+			while (character != 'x' && divider < MAX_STRING_LENGTH){
+				char charHolder[2] = "\0";
+				character = alt_up_sd_card_read(myFileHandle);
+				if (character != 'x') {
+					charHolder[0] = character;
+					strcat(start,charHolder);
+				}
+				divider++;
+			}
+		}
+
+		alt_up_sd_card_fclose(myFileHandle);
+	}
+	else
+		printf("File not opened for reading\n");
+
+	return;
+}
+
+int lastLog(void) {
+	short int myFileHandle;
+	int log = 0;
+
+	char logname[20];
+
+	sprintf(logname, "log%d.txt", log);
+
+	while((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
+		log++;
+		sprintf(logname, "log%d.txt", log);
+		//printf("attempting to open in lastLog = %s\n", logname);
+		alt_up_sd_card_fclose(myFileHandle);
+	}
+
+	if (log==0)
+		printf("no files opened in lastLog!\n");
+
+	return log;
+}
+
 void Init_SDCard(void) {
 		int i;
 		int connected = 0;
@@ -147,107 +338,3 @@ void Init_SDCard(void) {
 			}
 		}
 }
-
-//for reference
-
-/*
-void writeToFile(void) {
-	short int myFileHandle;
-	int i;
-
-	if((myFileHandle = alt_up_sd_card_fopen("text8.txt", true)) != -1) {
-		printf("File Opened\n");
-
-		for(i = 0; i < 5; i ++) {
-			if(alt_up_sd_card_write(myFileHandle,'A') == false){
-				printf("Error writing to file...\n");
-				return;
-			}
-		}
-		printf("Done!!!\n");
-		alt_up_sd_card_fclose(myFileHandle);
-	}
-	else
-		printf("File NOT Opened\n");
-
-	//printf("Please re-insert SD card to perform another operation.\n");
-}
-
-void readFromFile(void) {
-	short int myFileHandle;
-	int i;
-	int character;
-
-	if((myFileHandle = alt_up_sd_card_fopen("text2.txt", false)) != -1) {
-		printf("File Opened\n");
-
-		for(i = 0; i < 5; i ++) {
-			character = alt_up_sd_card_read(myFileHandle);
-			printf("ASCII character %i (decimal) read\n", character);
-		}
-		printf("72 = H, 69 = E, 76 = L, 79 = O\n");
-		printf("Done!!!\n");
-		alt_up_sd_card_fclose(myFileHandle);
-	}
-	else
-		printf("File NOT Opened\n");
-
-	//printf("Please re-insert SD card to perform another operation.\n");
-}
-
-
-void sdcard(void){
-	alt_up_sd_card_dev *device_reference = NULL;
-	int connected = 0;
-	int response;
-
-	printf("Opening SDCard\n");
-	if((device_reference = alt_up_sd_card_open_dev("/dev/Altera_UP_SD_Card_Avalon_Interface_0")) == NULL)
-	{
-		printf("SDCard Open FAILED\n");
-		return;
-	}
-	else
-		printf("SDCard Open PASSED\n");
-
-
-	if (device_reference != NULL ) {
-		while(1) {
-			if ((connected == 0) && (alt_up_sd_card_is_Present())){
-				printf("Card connected.\n");
-				if (alt_up_sd_card_is_FAT16()) {
-					printf("FAT16 file system detected.\n");
-
-					while(1) {
-						printf("Enter 0 to write to text1.txt or 1 to read from text2.txt: ");
-						scanf("%d", &response);
-
-						if (response == 0) {
-							writeToFile();
-						}
-
-						if (response == 1) {
-							readFromFile();
-						}
-
-						if (alt_up_sd_card_is_Present() == false) {
-							break;
-						}
-					}
-				}
-				else {
-					printf("Unknown file system.\n");
-				}
-				connected = 1;
-			} else if((connected == 1) && (alt_up_sd_card_is_Present() == false)){
-				printf("Card disconnected.\n");
-				connected =0;
-			}
-		}
-	}
-	else
-		printf("Can't open device\n");
-
-	return;
-}
-*/
