@@ -9,6 +9,7 @@
 #include "touch.h"
 #include "menus.h"
 #include "gps.h"
+#include "sdcard.h"
 
 
 

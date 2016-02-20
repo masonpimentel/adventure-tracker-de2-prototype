@@ -8,9 +8,9 @@
 #ifndef SDCARD_H_
 #define SDCARD_H_
 
+#include "Altera_UP_SD_Card_Avalon_Interface.h"
 
 #define MAX_STRING_LENGTH		28
-#include "Altera_UP_SD_Card_Avalon_Interface.h"
 
 void writeToFile(void);
 void readFromFile(void);

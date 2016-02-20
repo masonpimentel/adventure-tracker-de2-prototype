@@ -19,6 +19,9 @@ int redraw = 1;
 int log = 0;
 int initial = 1;
 
+//this turns to 1 as soon as there is a newtrip
+int entry = 0;
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //DRAWING
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +83,9 @@ void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, ch
 	DrawString(80, 270, longitude, strlen(longitude), BLACK, GRAY);
 	DrawString(80, 365, altitude, strlen(altitude), BLACK, GRAY);
 	DrawString(240, 180, log, strlen(log), BLACK, GRAY);
+
+	//cover up the "please insert sd card" if it's still there
+	FilledRectangle(50,431,625,480, DARK_GREEN);
 }
 
 void DrawTripData()
@@ -88,7 +94,11 @@ void DrawTripData()
 
 	sprintf(logname, "log%d", log);
 	printf("logname in DrawTripData = %s\n", logname);
-	DrawString(125, 175, logname, strlen(logname), BLUE, GRAY);
+
+	if (entry == 0)
+		DrawString(125, 175, "No logs yet!", sizeof("No logs yet!"), RED, GRAY);
+	else
+		DrawString(125, 175, logname, strlen(logname), BLUE, GRAY);
 
 	char start[256] = "\0";
 	char start2[256] = "\0";
@@ -110,6 +120,9 @@ void DrawTripData()
 	DrawString(80, 345, end, strlen(end), BLACK, GRAY);
 	DrawString(80, 365, end2, strlen(end2), BLACK, GRAY);
 	DrawString(80, 385, end3, strlen(end3), BLACK, GRAY);
+
+	printf("start = %s", start);
+	printf("end = %s", end);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -172,15 +185,16 @@ void GetNextMenu(Point p)
 }
 
 //this is for switching logs in past trips
-void PrevNext(Point p, int maxLogs)
+void PrevNext(Point p, int minLog, int maxLogs)
 {
 		//prev
 		if((p.x > PREV_X1) && (p.x < PREV_X2) &&
 				(p.y > PREV_Y1) && (p.y < PREV_Y2))
 		{
 			current_menu_func = &PastTrips;
-			if (log <= 0) {
-				log = log - 0;
+			printf("log = %d, minlog = %d\n", log, minLog);
+			if (log <= minLog-1) {
+				log = maxLogs-1;
 			}
 			else
 				log--;
@@ -192,8 +206,9 @@ void PrevNext(Point p, int maxLogs)
 			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
 		{
 			current_menu_func = &PastTrips;
+			printf("log = %d, maxlog = %d\n", log, maxLogs);
 			if (log >= maxLogs - 1) {
-				log = log + 0;
+				log = minLog-1;
 			}
 			else
 				log++;
@@ -203,10 +218,10 @@ void PrevNext(Point p, int maxLogs)
 			return;
 
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //PAGES
 ////////////////////////////////////////////////////////////////////////////////////////
-
 void MainMenu()
 {
 	current_menu_val = MAINMENU;
@@ -218,6 +233,8 @@ void MainMenu()
 	int i;
 	for(i=0; i<1000; i++);
 	Point p = GetRelease();
+	//this is here to make sure the SD card is inserted, otherwise program will crash
+	Init_SDCard();
 	GetNextMenu(p);
 	current_menu_func();
 }
@@ -244,18 +261,37 @@ void PastTrips()
 	char *firstEntry;
 	char *lastEntry;
 	int prevNext;
+	int minLog;
 	int maxLogs;
 	Point p;
 
-	//need to find the most recent logfile
-	maxLogs = lastLog();
-	printf("number of logs = %d\n", log);
+	//cover up the "please insert sd card" if it's still there
+	FilledRectangle(50,431,625,480, DARK_GREEN);
 
-	if (initial == 1) {
-		initial = 0;
-		log = maxLogs-1;
+	if (entry ==1) {
+		minLog = firstLog();
+		maxLogs = lastLog(minLog);
+		//set log to maxLogs - 1 if it hasn't yet
+		if (initial == 1) {
+			initial = 0;
+			log = maxLogs-1;
+		}
 	}
+	printf("minlog = %d\n", minLog);
+	printf("number of logs = %d\n", maxLogs);
 
+	/*
+	if (initial == 1) {
+		//if the user went to past trips before new trip, don't use maxLogs (there won't be any logs there)
+		if (maxLogs == 0) {
+			log = 0;
+		}
+		else {
+			initial = 0;
+
+		}
+	}
+*/
 	/* delay for debouncing screen */
 	for(i=0; i<1000; i++);
 
@@ -264,16 +300,13 @@ void PastTrips()
 	}
 	DrawTripData();
 
-	while(1) {
-		if (ScreenTouched()){
-			goto touched2;
-
-		}
-	}
+	WaitForTouch();
 
 touched2:
 	p = GetRelease();
-	PrevNext(p, maxLogs);
+	//this is here to make sure the SD card is inserted, otherwise program will crash
+	Init_SDCard();
+	PrevNext(p, minLog, maxLogs);
 	GetNextMenu(p);
 	current_menu_func();
 }
@@ -289,7 +322,7 @@ void NewTrip()
 	//snprintf(longitude, 100, "N13* 23' 36.11\"");
 	//snprintf(altitude, 100, "1180.23m");
 
-
+	entry = 1;
 	Point p;
 	/* update the menu state variable */
 	current_menu_val = NEWTRIP;
@@ -326,6 +359,7 @@ void NewTrip()
 	//DEBUG
 	int iteration = 0;
 	int log = 0;
+	int fileHandle;
 	//DEBUG
 
 	while(1)
@@ -363,7 +397,13 @@ void NewTrip()
 		strcpy(temp, gpsdat);
 		printf("%s\n", temp);
 
-		writeToSd(temp,log,sizeof(temp));
+		fileHandle = writeToSd(temp,log,sizeof(temp));
+		while (fileHandle == -1) {
+			printf("Trying again, re-init sd-card\n");
+			Init_SDCard();
+			strcpy(temp,gpsdat);
+			fileHandle = writeToSd(temp,log,sizeof(temp));
+		}
 
 		/* DEBUG
 		gpsdat = getGpsData();
@@ -372,16 +412,16 @@ void NewTrip()
 		*/
 
 		extractGpsTime(temp , time);
-		printf("%s\n", time);
+		//printf("%s\n", time);
 		strcpy(temp, gpsdat);
 		extractGpsLatitude(temp, latitude);
-		printf("%s\n", latitude);
+		//printf("%s\n", latitude);
 		strcpy(temp, gpsdat);
 		extractGpsLongitude(temp, longitude);
-		printf("%s\n", longitude);
+		//printf("%s\n", longitude);
 		strcpy(temp, gpsdat);
 		extractGpsAltitude(temp,  altitude);
-		printf("%s\n", altitude);
+		//printf("%s\n", altitude);
 
 		char logname[20];
 		sprintf(logname, "log%d", log);

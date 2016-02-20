@@ -3,6 +3,8 @@
 #include "touch.h"
 #include "sdcard.h"
 #include <string.h>
+#include "misc.h"
+#include "graphics.h"
 
 /*
  * Called by writeToSd to seek to the end of the log
@@ -24,8 +26,10 @@ int moveToEnd(int length, char* logname) {
 	else {
 		printf("File not opened for scanning, creating\n");
 		myFileHandle = alt_up_sd_card_fopen(logname, true);
-		alt_up_sd_card_fclose(myFileHandle);
-		return -1;
+		if (myFileHandle < 0) {
+			Init_SDCard();
+			moveToEnd(length, logname);
+		}
 	}
 }
 /*
@@ -75,9 +79,10 @@ int writeToSd(char* string, char log, int length) {
 		printf("Done!!!\n");
 		alt_up_sd_card_fclose(myFileHandle);
 	}
-	else
+	else {
 		printf("File not opened for writing\n");
-	//alt_up_sd_card_fclose(myFileHandle);
+		Init_SDCard();
+	}
 	return myFileHandle;
 }
 
@@ -96,7 +101,7 @@ void readFromSd(int log, int entry) {
 
 	sprintf(logname, "log%d.txt", log);
 
-	printf("logname in read = %s\n", logname);
+	//printf("logname in read = %s\n", logname);
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
 		//printf("File Opened for reading\n");
@@ -116,9 +121,10 @@ void readFromSd(int log, int entry) {
 		alt_up_sd_card_fclose(myFileHandle);
 
 	}
-	else
+	else {
 		printf("File not opened for reading\n");
-
+		Init_SDCard();
+	}
 }
 
 /*
@@ -136,7 +142,7 @@ int numEntries(int log) {
 	char logname[20];
 
 	sprintf(logname, "log%d.txt", log);
-	printf("logname in numEntries = %s\n", logname);
+	//printf("logname in numEntries = %s\n", logname);
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
 
@@ -154,9 +160,11 @@ int numEntries(int log) {
 		alt_up_sd_card_fclose(myFileHandle);
 
 	}
-	else
+	else {
 		printf("File not opened for reading\n");
-
+		Init_SDCard();
+	}
+	printf("this many entries = %d\n", entries);
 	return entries;
 
 }
@@ -171,6 +179,8 @@ int numEntries(int log) {
 void lastLogEntry(int log, char* end, int part) {
 	int toSeek = numEntries(log) - 1;
 
+	printf("toSeek = %d\n", toSeek);
+
 	short int myFileHandle;
 	int i;
 	char character = 'a';
@@ -180,7 +190,7 @@ void lastLogEntry(int log, char* end, int part) {
 	//char returnEntry[256] = "\0";
 
 	sprintf(logname, "log%d.txt", log);
-	printf("logname in seekToLast = %s\n", logname);
+	//printf("logname in seekToLast = %s\n", logname);
 
 	int toSkip = (part-1) * MAX_STRING_LENGTH;
 	int divider = 0;
@@ -192,7 +202,8 @@ void lastLogEntry(int log, char* end, int part) {
 			while(character != 'x') {
 				character = alt_up_sd_card_read(myFileHandle);
 			}
-			i++;
+			//printf("incremented\n");
+			character = 'a';
 		}
 		character = 'a';
 
@@ -226,9 +237,10 @@ void lastLogEntry(int log, char* end, int part) {
 		}
 		alt_up_sd_card_fclose(myFileHandle);
 	}
-	else
+	else {
 		printf("File not opened for reading\n");
-
+		Init_SDCard();
+	}
 	return;
 
 }
@@ -285,13 +297,46 @@ void firstLogEntry(int log, char* start, int part) {
 
 		alt_up_sd_card_fclose(myFileHandle);
 	}
-	else
+	else {
 		printf("File not opened for reading\n");
-
+		Init_SDCard();
+	}
 	return;
 }
 
-int lastLog(void) {
+/*
+ * Finds out how many logs there are in the SD card
+ *
+ * @param: first - the first log in the SD card
+ * @return: log - the last log in the SD card
+ */
+int lastLog(int first) {
+	short int myFileHandle;
+	int log = first;
+
+	char logname[20];
+
+	sprintf(logname, "log%d.txt", log);
+
+	while((myFileHandle = alt_up_sd_card_fopen(logname, false)) >= 0) {
+		log++;
+		sprintf(logname, "log%d.txt", log);
+		alt_up_sd_card_fclose(myFileHandle);
+	}
+
+	if (log==0) {
+		printf("no files opened in lastLog!\n");
+	}
+
+	return log;
+}
+
+/*
+ * Finds out the first log in the SD card
+ *
+ * @return: log - the first log in the SD card
+ */
+int firstLog(void) {
 	short int myFileHandle;
 	int log = 0;
 
@@ -299,16 +344,19 @@ int lastLog(void) {
 
 	sprintf(logname, "log%d.txt", log);
 
-	while((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
+	myFileHandle = alt_up_sd_card_fopen(logname, false);
+	if (myFileHandle >= 0) {
 		log++;
-		sprintf(logname, "log%d.txt", log);
-		//printf("attempting to open in lastLog = %s\n", logname);
 		alt_up_sd_card_fclose(myFileHandle);
+		return log;
 	}
 
-	if (log==0)
-		printf("no files opened in lastLog!\n");
+	while((myFileHandle = alt_up_sd_card_fopen(logname, false)) < 0) {
+		log++;
+		sprintf(logname, "log%d.txt", log);
+	}
 
+	printf("returning this log %d\n", log);
 	return log;
 }
 
@@ -336,5 +384,12 @@ void Init_SDCard(void) {
 				}
 					connected = 1;
 			}
+			else{
+				printf("No SD card detected\n");
+				DrawString(280,450,"Please insert SD card", sizeof("Please insert SD card")-1, RED, GRAY);
+				misc_sleep(2);
+				Init_SDCard();
+			}
+
 		}
 }
