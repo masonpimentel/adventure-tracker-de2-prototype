@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include "touch.h"
 #include <string.h>
+#include <stdlib.h>
 
 /* Returns the first bit (receive bit) from the status register
  *
@@ -101,7 +102,7 @@ void extractGpsTime(char* GpsData, char* ret)
 	token = strtok(NULL, " ");
 	strcpy(ret, token);
 
-	printf("%s\n", ret);
+	//printf("%s\n", ret);
 }
 
 void extractGpsLatitude(char* GpsData, char* ret)
@@ -115,11 +116,26 @@ void extractGpsLatitude(char* GpsData, char* ret)
 	while(strcmp(token, target) != 0)
 	{
 		token = strtok(NULL,  " ");
-		printf("%s\n", token);
+		//printf("%s\n", token);
 	}
 
 	token = strtok(NULL, " ");
-	strcpy(ret, token);
+
+	char degree[3];
+	memcpy(degree, token, 3);
+	degree[3] = '\0';
+
+	char minute[8];
+	memcpy(minute, token+2, 7);
+	minute[7] = '\0';
+
+	float fdegree = atof(degree);
+	float fminute = atof(minute);
+
+	float latitude = fdegree + fminute/(60.0);
+	char temp[64];
+	snprintf(temp, 64, "%f", latitude);
+	strcpy(ret, temp);
 }
 
 void extractGpsLongitude(char* GpsData, char* ret)
@@ -134,7 +150,22 @@ void extractGpsLongitude(char* GpsData, char* ret)
 	}
 
 	token = strtok(NULL, " ");
-	strcpy(ret, token);
+
+	char degree[4];
+	memcpy(degree, token, 3);
+	degree[3] = '\0';
+
+	char minute[8];
+	memcpy(minute, token+3, 7);
+	minute[7] = '\0';
+
+	float fdegree = atof(degree);
+	float fminute = atof(minute);
+
+	float longitude = fdegree + fminute/(60.0);
+	char temp[64];
+	snprintf(temp, 64, "%f", longitude);
+	strcpy(ret, temp);
 
 }
 
@@ -169,7 +200,6 @@ char *getGpsData(){
 	Init_Gps();
 
 	char temp;
-	char temp1;
 	temp = getcharGps();
 	//smallDelay();
 

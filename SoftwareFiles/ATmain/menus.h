@@ -20,6 +20,7 @@ typedef enum
 	MAINMENU,
 	NEWTRIP,
 	EASTEREGGS,
+	PASTTRIPS,
 } Menus;
 
 
@@ -57,6 +58,25 @@ typedef enum
 #define NEWTRIP_BACK_X2		800
 #define NEWTRIP_BACK_Y2		480
 
+/* past trips menu constants */
+
+#define PAST_TRIP_BACK_X1	650
+#define PAST_TRIP_BACK_Y1	380
+
+#define PAST_TRIP_BACK_X2	800
+#define PAST_TRIP_BACK_Y2	480
+
+/* past trips prev and next buttons */
+
+#define PREV_X1				75
+#define PREV_Y1				75
+#define PREV_X2				212
+#define PREV_Y2				125
+
+#define NEXT_X1				237
+#define NEXT_Y1				75
+#define NEXT_X2				375
+#define NEXT_Y2				125
 
 void GetNextMenu(Point p);
 void MainMenu(void);

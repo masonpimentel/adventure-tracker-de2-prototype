@@ -150,6 +150,7 @@ C_SRCS += main.c
 C_SRCS += menus.c
 C_SRCS += sdcard.c
 C_SRCS += serial_new.c
+C_SRCS += misc.c
 CXX_SRCS :=
 ASM_SRCS :=
 

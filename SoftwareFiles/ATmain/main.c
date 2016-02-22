@@ -9,6 +9,7 @@
 #include "touch.h"
 #include "menus.h"
 #include "gps.h"
+#include "sdcard.h"
 
 
 
@@ -16,10 +17,12 @@
 
 
 
+
 int main()
 {
 	Init_Touch();
 	Init_Gps();
+	Init_SDCard();
 	current_menu_func = &MainMenu;
 	current_menu_func();
 	return 0;

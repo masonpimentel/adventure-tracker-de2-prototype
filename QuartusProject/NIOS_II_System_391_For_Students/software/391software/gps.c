@@ -101,7 +101,7 @@ void extractGpsTime(char* GpsData, char* ret)
 	token = strtok(NULL, " ");
 	strcpy(ret, token);
 
-	printf("%s\n", ret);
+	//printf("%s\n", ret);
 }
 
 void extractGpsLatitude(char* GpsData, char* ret)
@@ -115,7 +115,7 @@ void extractGpsLatitude(char* GpsData, char* ret)
 	while(strcmp(token, target) != 0)
 	{
 		token = strtok(NULL,  " ");
-		printf("%s\n", token);
+		//printf("%s\n", token);
 	}
 
 	token = strtok(NULL, " ");
@@ -169,7 +169,6 @@ char *getGpsData(){
 	Init_Gps();
 
 	char temp;
-	char temp1;
 	temp = getcharGps();
 	//smallDelay();
 

@@ -62,6 +62,8 @@ void DrawString(int x1, int y1, char* string, int strlen, int fontcolour, int ba
 
 void DrawButton(int x1, int y1, int x2, int y2, char* string, int strlen, int fontcolour, int backgroundcolour);
 
+void Line(int x1, int y1, int x2, int y2, int colour);
+
 void TriangleTest(void);
 
 
