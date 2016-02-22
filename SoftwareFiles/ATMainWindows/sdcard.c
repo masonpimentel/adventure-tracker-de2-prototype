@@ -7,11 +7,39 @@
 #include "graphics.h"
 
 /*
+ * Puts the next log entry into a buffer
+ *
+ * @param: buf - the string the character is being appended to
+ * @param: fd - the file descriptor of the open file
+ *
+ */
+void nextEntry(char* buf, int fd) {
+	int i = 0;
+	char character = 'a';
+
+	while(character != 'x') {
+		character = alt_up_sd_card_read(fd);
+		if(character == -1)
+			goto error;
+		if (character != 'x') {
+			buf[i] = character;
+		}
+    i++;
+	}
+  buf[i] = '\0';
+  return;
+error:
+  buf[0] = '\0';
+
+}
+
+
+/*
  * Called by writeToSd to seek to the end of the log
  */
 int moveToEnd(int length, char* logname) {
 	short int myFileHandle;
-	int i;
+
 	int character = 1;
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
@@ -51,7 +79,7 @@ int moveToEnd(int length, char* logname) {
  */
 int writeToSd(char* string, char log, int length) {
 	int i;
-	int response;
+
 	short int myFileHandle;
 	char modified[length+2];
 	char logname[20];
@@ -118,7 +146,6 @@ void readFromSd(int log, int entry) {
 			printf("ASCII character %i (decimal) read\n", character);
 		}
 		//printf("Done!!!\n");
-		alt_up_sd_card_fclose(myFileHandle);
 
 	}
 	else {
@@ -135,7 +162,7 @@ void readFromSd(int log, int entry) {
  */
 int numEntries(int log) {
 	short int myFileHandle;
-	int i;
+
 	char character = 'a';
 	int entries = 0;
 
@@ -169,6 +196,8 @@ int numEntries(int log) {
 
 }
 
+
+
 /*
  * Puts the last entry in a string
  *
@@ -176,7 +205,8 @@ int numEntries(int log) {
  * @param: end - the end string
  * @param: part - 1 for the first half of the string, 2 for the second half of the string
  */
-void lastLogEntry(int log, char* end, int part) {
+void lastLogEntry(int log, char* end, int part)
+{
 	int toSeek = numEntries(log) - 1;
 
 	printf("toSeek = %d\n", toSeek);
@@ -184,7 +214,6 @@ void lastLogEntry(int log, char* end, int part) {
 	short int myFileHandle;
 	int i;
 	char character = 'a';
-	int entries = 0;
 
 	char logname[20];
 	//char returnEntry[256] = "\0";
@@ -254,9 +283,7 @@ void lastLogEntry(int log, char* end, int part) {
  */
 void firstLogEntry(int log, char* start, int part) {
 	short int myFileHandle;
-	int i;
 	char character = 'a';
-	int entries = 0;
 
 	char logname[20];
 
@@ -360,8 +387,19 @@ int firstLog(void) {
 	return log;
 }
 
+int checkIfLog(void) {
+	int myFileHandle = alt_up_sd_card_fopen("log0.txt", false);
+
+	if (myFileHandle >= 0) {
+		alt_up_sd_card_fclose(myFileHandle);
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 void Init_SDCard(void) {
-		int i;
 		int connected = 0;
 		alt_up_sd_card_dev *device_reference = NULL;
 

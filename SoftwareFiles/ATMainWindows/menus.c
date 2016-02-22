@@ -14,13 +14,14 @@
 #include "gps.h"
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
+#include "paths.h"
 
 int redraw = 1;
 int log = 0;
 int initial = 1;
 
-//this turns to 1 as soon as there is a newtrip
-int entry = 0;
+int logExists = 0;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //DRAWING
@@ -45,8 +46,9 @@ void DrawGpsLabels()
 
 void DrawTripLabels()
 {
-	DrawString(60,225,"Start: ", sizeof("Start: ")-1, BLACK, GRAY);
-	DrawString(60, 325, "End: ", sizeof("End: ")-1,BLACK, GRAY);
+	DrawString(60,205,"Total Time: ", sizeof("Total Time: ")-1, BLACK, GRAY);
+	DrawString(60, 275, "Total Distance: ", sizeof("Total Distance: ")-1,BLACK, GRAY);
+	DrawString(60, 345, "Total Change in Altitude: ", sizeof("Total Change in Altitude: ")-1,BLACK, GRAY);
 }
 
 void DrawPastTrips()
@@ -92,14 +94,15 @@ void DrawTripData()
 {
 	char logname[20];
 
-	sprintf(logname, "log%d", log);
+	snprintf(logname, 20, "log%d", log);
 	printf("logname in DrawTripData = %s\n", logname);
 
-	if (entry == 0)
-		DrawString(125, 175, "No logs yet!", sizeof("No logs yet!"), RED, GRAY);
+	if (logExists == 1)
+		DrawString(125, 155, logname, strlen(logname), BLUE, GRAY);
 	else
-		DrawString(125, 175, logname, strlen(logname), BLUE, GRAY);
+		DrawString(125, 155, "No logs yet!", sizeof("No logs yet!"), RED, GRAY);
 
+/*
 	char start[256] = "\0";
 	char start2[256] = "\0";
 	char start3[256] = "\0";
@@ -123,6 +126,46 @@ void DrawTripData()
 
 	printf("start = %s", start);
 	printf("end = %s", end);
+	*/
+
+	char start1[256] = "\0";
+	char end1[256] = "\0";
+	char startTime[30] = "\0";
+	char endTime[30] = "\0";
+
+	char diffTime[100] = "\0";
+
+	//char startSeconds[10] = "\0";
+	int startSeconds = 0;
+	int endSeconds = 0;
+	int diffSeconds = 0;
+
+	firstLogEntry(log, start1, 1);
+	lastLogEntry(log, end1, 1);
+
+	printf("start = %s\n", start1);
+	printf("end = %s\n", end1);
+
+	extractGpsTime(start1, startTime);
+	extractGpsTime(end1, endTime);
+
+	printf("start time = %s\n", startTime);
+	printf("end time = %s\n", endTime);
+
+	startSeconds = extractTotalSeconds(startTime);
+	endSeconds = extractTotalSeconds(endTime);
+	diffSeconds = endSeconds - startSeconds;
+
+	//check for roll-over
+	if (diffSeconds < 0) {
+		diffSeconds += (12*3600);
+	}
+
+	secondsToTime(diffTime,diffSeconds);
+
+	//sprintf(diffTime, "%d", diffSeconds);
+
+	DrawString(80, 225, diffTime, strlen(diffTime), BLACK, GRAY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -187,13 +230,14 @@ void GetNextMenu(Point p)
 //this is for switching logs in past trips
 void PrevNext(Point p, int minLog, int maxLogs)
 {
+		initial = 0;
 		//prev
 		if((p.x > PREV_X1) && (p.x < PREV_X2) &&
 				(p.y > PREV_Y1) && (p.y < PREV_Y2))
 		{
 			current_menu_func = &PastTrips;
 			printf("log = %d, minlog = %d\n", log, minLog);
-			if (log <= minLog-1) {
+			if (log <= 0) {
 				log = maxLogs-1;
 			}
 			else
@@ -208,7 +252,7 @@ void PrevNext(Point p, int minLog, int maxLogs)
 			current_menu_func = &PastTrips;
 			printf("log = %d, maxlog = %d\n", log, maxLogs);
 			if (log >= maxLogs - 1) {
-				log = minLog-1;
+				log = 0;
 			}
 			else
 				log++;
@@ -257,41 +301,24 @@ void PastTrips()
 {
 	current_menu_val = PASTTRIPS;
 	int i;
-	int num;
-	char *firstEntry;
-	char *lastEntry;
-	int prevNext;
-	int minLog;
 	int maxLogs;
 	Point p;
 
 	//cover up the "please insert sd card" if it's still there
 	FilledRectangle(50,431,625,480, DARK_GREEN);
 
-	if (entry ==1) {
-		minLog = firstLog();
-		maxLogs = lastLog(minLog);
-		//set log to maxLogs - 1 if it hasn't yet
-		if (initial == 1) {
-			initial = 0;
-			log = maxLogs-1;
-		}
-	}
-	printf("minlog = %d\n", minLog);
+	//check that there is a log0
+	logExists = checkIfLog();
+
+	//the first log will have to always be 0
+	maxLogs = lastLog(0);
+
+	//first time getting here we should set log to the most recent one
+	if (initial == 1)
+		log = maxLogs-1;
+
 	printf("number of logs = %d\n", maxLogs);
 
-	/*
-	if (initial == 1) {
-		//if the user went to past trips before new trip, don't use maxLogs (there won't be any logs there)
-		if (maxLogs == 0) {
-			log = 0;
-		}
-		else {
-			initial = 0;
-
-		}
-	}
-*/
 	/* delay for debouncing screen */
 	for(i=0; i<1000; i++);
 
@@ -299,14 +326,14 @@ void PastTrips()
 		DrawPastTrips();
 	}
 	DrawTripData();
+	DrawPath(1);
 
 	WaitForTouch();
 
-touched2:
 	p = GetRelease();
 	//this is here to make sure the SD card is inserted, otherwise program will crash
 	Init_SDCard();
-	PrevNext(p, minLog, maxLogs);
+	PrevNext(p, 0, maxLogs);
 	GetNextMenu(p);
 	current_menu_func();
 }
@@ -322,7 +349,6 @@ void NewTrip()
 	//snprintf(longitude, 100, "N13* 23' 36.11\"");
 	//snprintf(altitude, 100, "1180.23m");
 
-	entry = 1;
 	Point p;
 	/* update the menu state variable */
 	current_menu_val = NEWTRIP;

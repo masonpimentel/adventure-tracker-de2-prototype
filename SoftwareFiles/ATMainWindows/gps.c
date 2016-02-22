@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include "touch.h"
 #include <string.h>
+#include <stdlib.h>
 
 /* Returns the first bit (receive bit) from the status register
  *
@@ -104,6 +105,52 @@ void extractGpsTime(char* GpsData, char* ret)
 	//printf("%s\n", ret);
 }
 
+int extractTotalSeconds(char* time) {
+	char* timeCopy1 = malloc(1+ strlen(time));
+	strcpy(timeCopy1,time);
+	char* timeCopy2 = malloc(1+ strlen(time));
+	strcpy(timeCopy2,time);
+	char* hours;
+	char* minutes;
+	char* seconds;
+	int hoursInt, minutesInt, secondsInt;
+
+	//get hours
+	hours = strtok(time, ":");
+
+	//get minutes
+	minutes = strtok(timeCopy1, ":");
+	minutes = strtok(NULL, ":");
+
+	//get seconds
+	seconds = strtok(timeCopy2, ":");
+	seconds = strtok(NULL, ":");
+	seconds = strtok(NULL, ":");
+
+	hoursInt = 3600 * atoi(hours);
+	minutesInt = 60 * atoi(minutes);
+	secondsInt = atoi(seconds);
+
+	return (secondsInt + minutesInt + hoursInt);
+}
+
+void secondsToTime(char* buf, int seconds) {
+	int hours = 0;
+	int minutes = 0;
+
+	if (seconds >= 3600) {
+		hours = seconds/3600;
+		seconds = seconds - (hours*3600);
+	}
+	if (seconds >= 60) {
+		minutes = seconds/60;
+		seconds = seconds - (minutes*60);
+	}
+
+	sprintf(buf, "%02d:%02d:%02d", hours, minutes, seconds);
+	printf("buf = %s\n", buf);
+}
+
 void extractGpsLatitude(char* GpsData, char* ret)
 {
 	char* token;
@@ -119,7 +166,22 @@ void extractGpsLatitude(char* GpsData, char* ret)
 	}
 
 	token = strtok(NULL, " ");
-	strcpy(ret, token);
+
+	char degree[3];
+	memcpy(degree, token, 3);
+	degree[3] = '\0';
+
+	char minute[8];
+	memcpy(minute, token+2, 7);
+	minute[7] = '\0';
+
+	float fdegree = atof(degree);
+	float fminute = atof(minute);
+
+	float latitude = fdegree + fminute/(60.0);
+	char temp[64];
+	snprintf(temp, 64, "%f", latitude);
+	strcpy(ret, temp);
 }
 
 void extractGpsLongitude(char* GpsData, char* ret)
@@ -134,7 +196,22 @@ void extractGpsLongitude(char* GpsData, char* ret)
 	}
 
 	token = strtok(NULL, " ");
-	strcpy(ret, token);
+
+	char degree[4];
+	memcpy(degree, token, 3);
+	degree[3] = '\0';
+
+	char minute[8];
+	memcpy(minute, token+3, 7);
+	minute[7] = '\0';
+
+	float fdegree = atof(degree);
+	float fminute = atof(minute);
+
+	float longitude = fdegree + fminute/(60.0);
+	char temp[64];
+	snprintf(temp, 64, "%f", longitude);
+	strcpy(ret, temp);
 
 }
 
@@ -169,7 +246,6 @@ char *getGpsData(){
 	Init_Gps();
 
 	char temp;
-	char temp1;
 	temp = getcharGps();
 	//smallDelay();
 

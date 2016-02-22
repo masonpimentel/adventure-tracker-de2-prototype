@@ -14,10 +14,16 @@
 
 void writeToFile(void);
 void readFromFile(void);
-void sdcard(void);
+int firstLog(void);
+int lastLog(int first);
 int writeToSd(char* string, char log, int length);
 void readFromSd(int log, int entry);
 int moveToEnd(int length, char* logname);
+
+
+void nextEntry(char* buf, int fd);
+
+void Init_SDCard(void);
 
 
 
