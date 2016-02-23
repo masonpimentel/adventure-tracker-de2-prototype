@@ -83,6 +83,7 @@ void MainMenu(void);
 void NewTrip(void);
 void PastTrips(void);
 void EasterEggs(void);
+void DrawMainMenu();
 
 
 #endif /* MENUS_H_ */

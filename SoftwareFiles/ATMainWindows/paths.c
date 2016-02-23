@@ -122,7 +122,6 @@ int GetPathInfo(path_info* pathInfo, int log)
 
 void GpsToPoint(char* gpsdat, path_info* pathInfo, XYPixel* current_point)
 {
-
 	float longitude = ExtractLongitude(gpsdat);
 	float latitude = ExtractLatitude(gpsdat);
 

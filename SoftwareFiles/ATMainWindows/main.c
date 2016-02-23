@@ -10,13 +10,7 @@
 #include "menus.h"
 #include "gps.h"
 #include "sdcard.h"
-
-
-
 #include <stdio.h>
-
-
-
 
 int main()
 {
