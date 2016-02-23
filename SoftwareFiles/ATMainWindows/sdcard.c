@@ -191,7 +191,6 @@ int numEntries(int log) {
 		printf("File not opened for reading\n");
 		Init_SDCard();
 	}
-	printf("this many entries = %d\n", entries);
 	return entries;
 
 }
@@ -203,7 +202,7 @@ int numEntries(int log) {
  *
  * @param: log - the logfile being read from
  * @param: end - the end string
- * @param: part - 1 for the first half of the string, 2 for the second half of the string
+ * @param: part - 1 for the first half of the string, 2 for the second half of the string 0 for the whole thing
  */
 void lastLogEntry(int log, char* end, int part)
 {
@@ -216,10 +215,8 @@ void lastLogEntry(int log, char* end, int part)
 	char character = 'a';
 
 	char logname[20];
-	//char returnEntry[256] = "\0";
 
 	sprintf(logname, "log%d.txt", log);
-	//printf("logname in seekToLast = %s\n", logname);
 
 	int toSkip = (part-1) * MAX_STRING_LENGTH;
 	int divider = 0;
@@ -236,6 +233,16 @@ void lastLogEntry(int log, char* end, int part)
 		}
 		character = 'a';
 
+		if (part == 0) {
+			while (character != 'x'){
+				char charHolder[2] = "\0";
+				character = alt_up_sd_card_read(myFileHandle);
+				if (character != 'x') {
+					charHolder[0] = character;
+					strcat(end,charHolder);
+				}
+			}
+		}
 		if (part == 1) {
 			while (character != 'x' && divider < MAX_STRING_LENGTH){
 				char charHolder[2] = "\0";
@@ -274,12 +281,121 @@ void lastLogEntry(int log, char* end, int part)
 
 }
 
+
+/*
+ * Re-opens the file to reset the seek position
+ *
+ * @param: logNum - the logfile being read from
+ * @return: newLog - the new file descriptor
+ */
+int reOpenFile(int logNum, int fd) {
+	char logname[20];
+	int newLog;
+
+	int result = alt_up_sd_card_fclose(fd);
+	printf("result in re-open = %d\n", result);
+
+	snprintf(logname, 20, "log%d.txt", logNum);
+
+	printf("attempting to re-open %s\n", logname);
+
+	if((newLog = alt_up_sd_card_fopen(logname, false)) != -1)
+		printf("File re-opened, filehandle = %d\n", newLog);
+	else {
+		//handle SD card not inserted
+		printf("File not re-opened\n");
+		Init_SDCard();
+		reOpenFile(logNum,fd);
+	}
+
+	return newLog;
+}
+
+/*
+ * Puts the last entry in a string
+ *
+ * @param: log - the logfile being read from
+ * @param: buf - the string the entry will be put in
+ * @param: part - 1 for the first half of the string, 2 for the second half of the string 0 for the whole thing
+ * @param: entry - the entry in the logfile to get (starting at 0)
+ * @param: fd - the file descriptor
+ * @param: reopen - if set to 1, re-open the file to reset the seek position
+ * note that we need the fd now because we are doing multiple read operations - we cannot afford to be
+ * constantly opening and closing the file
+ */
+void getLogEntry(int log, char* buf, int part, int entry, int alreadySeeked, int fd)
+{
+
+	int toSeek = entry-alreadySeeked;
+
+	printf("toSeek in getLogEntry = %d\n", toSeek);
+
+	int i;
+	char character = 'a';
+
+	char logname[20];
+
+	sprintf(logname, "log%d.txt", log);
+
+	int toSkip = (part-1) * MAX_STRING_LENGTH;
+	int divider = 0;
+
+	//seek through all the 'x's
+	for (i=0; i<toSeek; i++) {
+		while(character != 'x') {
+			character = alt_up_sd_card_read(fd);
+		}
+		character = 'a';
+	}
+	character = 'a';
+
+	if (part == 0) {
+		while (character != 'x'){
+			char charHolder[2] = "\0";
+			character = alt_up_sd_card_read(fd);
+			if (character != 'x') {
+				charHolder[0] = character;
+				strcat(buf,charHolder);
+			}
+		}
+	}
+	if (part == 1) {
+		while (character != 'x' && divider < MAX_STRING_LENGTH){
+			char charHolder[2] = "\0";
+			character = alt_up_sd_card_read(fd);
+			if (character != 'x') {
+				charHolder[0] = character;
+				strcat(buf,charHolder);
+			}
+			divider++;
+		}
+	}
+	else {
+		int skip;
+		//need to skip to where first half left off
+		for (skip = 0; skip < toSkip; skip++) {
+			character = alt_up_sd_card_read(fd);
+		}
+		while (character != 'x' && divider < MAX_STRING_LENGTH){
+			char charHolder[2] = "\0";
+			character = alt_up_sd_card_read(fd);
+			if (character != 'x') {
+				charHolder[0] = character;
+				strcat(buf,charHolder);
+			}
+			divider++;
+		}
+	}
+
+	return;
+}
+
 /*
  * Puts the first entry in a string
  *
  * @param: log - the logfile being read from
  * @param: start - the start string
- * @param: part - 1 for the first half of the string, 2 for the second etc.
+ * @param: part - 1 for the first half of the string, 2 for the second etc. 0 for the whole thing
  */
 void firstLogEntry(int log, char* start, int part) {
 	short int myFileHandle;
@@ -294,6 +410,16 @@ void firstLogEntry(int log, char* start, int part) {
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
 
+		if (part == 0) {
+			while (character != 'x'){
+				char charHolder[2] = "\0";
+				character = alt_up_sd_card_read(myFileHandle);
+				if (character != 'x') {
+					charHolder[0] = character;
+					strcat(start,charHolder);
+				}
+			}
+		}
 		if (part == 1) {
 			while (character != 'x' && divider < MAX_STRING_LENGTH){
 				char charHolder[2] = "\0";

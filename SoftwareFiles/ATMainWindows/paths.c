@@ -54,6 +54,21 @@ float ExtractLatitude(char* gpsdat)
 	return atof(token);
 }
 
+float ExtractAltitude(char* gpsdat)
+{
+	char* delim = " ";
+	char temp[100];
+	strcpy(temp,gpsdat);
+	char* token = strtok(temp, delim);
+	char* match = "Altitude:";
+	while(strcmp(token, match) != 0)
+	{
+		token = strtok(0,delim);
+	}
+	token = strtok(0,delim);
+	return atof(token);
+}
+
 int GetPathInfo(path_info* pathInfo, int log)
 {
 	char buf[100];
@@ -159,6 +174,7 @@ int DrawPath(int log)
 	alt_up_sd_card_fclose(fd);
 	return 0;
 }
+
 
 
 

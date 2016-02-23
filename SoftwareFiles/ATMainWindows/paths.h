@@ -11,6 +11,7 @@
 /* top level path drawing function for displaying logged trip */
 /* log is the number of the trip that we want to display */
 int DrawPath(int log);
+float ExtractAltitude(char* gpsdat);
 
 
 #endif /* PATHS_H_ */

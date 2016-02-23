@@ -16,9 +16,11 @@
 #include <time.h>
 #include <stdio.h>
 #include "paths.h"
+#include <math.h>
+#include "Altera_UP_SD_Card_Avalon_Interface.h"
 
 int redraw = 1;
-int log = 0;
+int logNum = 0;
 int initial = 1;
 
 int logExists = 0;
@@ -78,94 +80,134 @@ void DrawPastTrips()
 ////////////////////////////////////////////////////////////////////////////////////////
 //DATA
 ////////////////////////////////////////////////////////////////////////////////////////
-void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* log)
+void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* logname)
 {
 	DrawString(80, 85, time, strlen(time), BLACK, GRAY);
 	DrawString(80, 175, latitude, strlen(latitude), BLACK, GRAY);
 	DrawString(80, 270, longitude, strlen(longitude), BLACK, GRAY);
 	DrawString(80, 365, altitude, strlen(altitude), BLACK, GRAY);
-	DrawString(240, 180, log, strlen(log), BLACK, GRAY);
+	DrawString(240, 180, logname, strlen(logname), BLACK, GRAY);
 
 	//cover up the "please insert sd card" if it's still there
 	FilledRectangle(50,431,625,480, DARK_GREEN);
 }
 
-void DrawTripData()
+void DrawTripData(int maxLogs, int fd, int maxEntries)
 {
 	char logname[20];
+	snprintf(logname, 20, "log%d", logNum);
 
-	snprintf(logname, 20, "log%d", log);
-	printf("logname in DrawTripData = %s\n", logname);
+	//cover up the "please insert sd card" if it's still there
+	FilledRectangle(50,431,625,480, DARK_GREEN);
 
 	if (logExists == 1)
 		DrawString(125, 155, logname, strlen(logname), BLUE, GRAY);
 	else
 		DrawString(125, 155, "No logs yet!", sizeof("No logs yet!"), RED, GRAY);
 
-/*
 	char start[256] = "\0";
-	char start2[256] = "\0";
-	char start3[256] = "\0";
+	char next[256] = "\0";
 	char end[256] = "\0";
-	char end2[256] = "\0";
-	char end3[256] = "\0";
 
-	firstLogEntry(log, start, 1);
-	firstLogEntry(log, start2, 2);
-	firstLogEntry(log, start3, 3);
-	lastLogEntry(log, end, 1);
-	lastLogEntry(log, end2, 2);
-	lastLogEntry(log, end3, 3);
+	char temp[256] = "\0";
 
-	DrawString(80, 245, start, strlen(start), BLACK, GRAY);
-	DrawString(80, 265, start2, strlen(start2), BLACK, GRAY);
-	DrawString(80, 285, start3, strlen(start3), BLACK, GRAY);
-	DrawString(80, 345, end, strlen(end), BLACK, GRAY);
-	DrawString(80, 365, end2, strlen(end2), BLACK, GRAY);
-	DrawString(80, 385, end3, strlen(end3), BLACK, GRAY);
+	char tempStart[256] = "\0";
+	char tempNext[256] = "\0";
+	char tempEnd[256] = "\0";
 
-	printf("start = %s", start);
-	printf("end = %s", end);
-	*/
-
-	char start1[256] = "\0";
-	char end1[256] = "\0";
 	char startTime[30] = "\0";
 	char endTime[30] = "\0";
+	char startLat[30] = "\0";
+	char endLat[30] = "\0";
+	char startLong[30] = "\0";
+	char endLong[30] = "\0";
+	char startAlt[30] = "\0";
+	char nextAlt[30] = "\0";
 
 	char diffTime[100] = "\0";
+	//char diffLocation[100] = "\0";
+	char diffAltitude[100] = "\0";
 
-	//char startSeconds[10] = "\0";
 	int startSeconds = 0;
 	int endSeconds = 0;
 	int diffSeconds = 0;
 
-	firstLogEntry(log, start1, 1);
-	lastLogEntry(log, end1, 1);
+	int i = 0;
 
-	printf("start = %s\n", start1);
-	printf("end = %s\n", end1);
+	float startAltitude = 0;
+	float nextAltitude = 0;
+	float diffAltitudeInt = 0;
+	float totalAltitude = 0;
 
-	extractGpsTime(start1, startTime);
-	extractGpsTime(end1, endTime);
+	getLogEntry(logNum, start, 0, 0, 0, 0, fd);
+	printf("start = %s\n", start);
+	printf("max entries = %d\n", maxEntries);
+	getLogEntry(logNum, end, 0, (maxEntries-1), 1, 0, fd);
+	printf("end = %s\n", end);
 
-	printf("start time = %s\n", startTime);
-	printf("end time = %s\n", endTime);
-
+	//time
+	strcpy(tempStart, start);
+	strcpy(tempEnd, end);
+	extractGpsTime(tempStart, startTime);
+	extractGpsTime(tempEnd, endTime);
 	startSeconds = extractTotalSeconds(startTime);
 	endSeconds = extractTotalSeconds(endTime);
 	diffSeconds = endSeconds - startSeconds;
-
 	//check for roll-over
 	if (diffSeconds < 0) {
 		diffSeconds += (12*3600);
 	}
-
 	secondsToTime(diffTime,diffSeconds);
-
-	//sprintf(diffTime, "%d", diffSeconds);
-
 	DrawString(80, 225, diffTime, strlen(diffTime), BLACK, GRAY);
+
+
+
+	fd = reOpenFile(logNum,fd);
+	memset(start,0,sizeof(start));
+	//printf("this should be empty %s\n", start);
+	getLogEntry(logNum, start, 0, i, 0, 0, fd);
+	strcpy(tempStart, start);
+	printf("tempstart = %s\n", tempStart);
+	extractGpsAltitude(tempStart, startAlt);
+	printf("start altitude = %s\n", startAlt);
+	startAltitude = atof(startAlt);
+
+	//altitude
+	for(i=1; i<maxEntries; i++) {
+		//fd = reOpenFile(logNum,fd);
+		memset(next,0,sizeof(next));
+		getLogEntry(logNum, next, 0, 0, 0, 0, fd);
+		strcpy(tempNext, next);
+		printf("tempnext = %s\n", tempNext);
+		extractGpsAltitude(tempNext, nextAlt);
+		printf("next altitude = %s\n", nextAlt);
+		nextAltitude = atof(nextAlt);
+
+		printf("start alt f = %lf\n", startAltitude);
+		printf("next alt f = %lf\n", nextAltitude);
+
+		diffAltitudeInt = nextAltitude - startAltitude;
+
+		totalAltitude = totalAltitude + diffAltitudeInt;
+
+		startAltitude = nextAltitude;
+	}
+
+	printf("total = %lf\n", totalAltitude);
+	sprintf(diffAltitude, "%.0lf", totalAltitude);
+	DrawString(80, 365, diffAltitude, strlen(diffAltitude), BLACK, GRAY);
+
+	//distance
+
+	double val;
+	double calc;
+
+	val = 4.0;
+	calc = sqrt(val);
+
+	printf("Testing sqrt: %lf\n", calc);
+
+	alt_up_sd_card_fclose(fd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -236,12 +278,12 @@ void PrevNext(Point p, int minLog, int maxLogs)
 				(p.y > PREV_Y1) && (p.y < PREV_Y2))
 		{
 			current_menu_func = &PastTrips;
-			printf("log = %d, minlog = %d\n", log, minLog);
-			if (log <= 0) {
-				log = maxLogs-1;
+			printf("log = %d, minlog = %d\n", logNum, minLog);
+			if (logNum <= 0) {
+				logNum = maxLogs-1;
 			}
 			else
-				log--;
+				logNum--;
 			redraw = 1;
 		}
 
@@ -250,12 +292,12 @@ void PrevNext(Point p, int minLog, int maxLogs)
 			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
 		{
 			current_menu_func = &PastTrips;
-			printf("log = %d, maxlog = %d\n", log, maxLogs);
-			if (log >= maxLogs - 1) {
-				log = 0;
+			printf("log = %d, maxlog = %d\n", logNum, maxLogs);
+			if (logNum >= maxLogs - 1) {
+				logNum = 0;
 			}
 			else
-				log++;
+				logNum++;
 			redraw = 1;
 		}
 		else
@@ -302,22 +344,41 @@ void PastTrips()
 	current_menu_val = PASTTRIPS;
 	int i;
 	int maxLogs;
+	int maxEntries;
 	Point p;
-
-	//cover up the "please insert sd card" if it's still there
-	FilledRectangle(50,431,625,480, DARK_GREEN);
 
 	//check that there is a log0
 	logExists = checkIfLog();
+
+	maxEntries = numEntries(logNum);
 
 	//the first log will have to always be 0
 	maxLogs = lastLog(0);
 
 	//first time getting here we should set log to the most recent one
 	if (initial == 1)
-		log = maxLogs-1;
+		logNum = maxLogs-1;
 
 	printf("number of logs = %d\n", maxLogs);
+
+	//cover up the "please insert sd card" if it's still there
+	FilledRectangle(50,431,625,480, DARK_GREEN);
+
+	int myFileHandle;
+	char logname[20];
+
+	snprintf(logname, 20, "log%d.txt", logNum);
+	printf("logname in pasttrips = %s\n", logname);
+
+	//cannot afford to be constantly opening and closing, so open just once here
+	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1)
+		printf("File opened for getting next, filehandle = %d\n", myFileHandle);
+	else {
+		//handle SD card not inserted
+		printf("File not opened for next\n");
+		Init_SDCard();
+		PastTrips();
+	}
 
 	/* delay for debouncing screen */
 	for(i=0; i<1000; i++);
@@ -325,7 +386,8 @@ void PastTrips()
 	if (redraw==1) {
 		DrawPastTrips();
 	}
-	DrawTripData();
+
+	DrawTripData(maxLogs, myFileHandle, maxEntries);
 	DrawPath(1);
 
 	WaitForTouch();
@@ -384,7 +446,7 @@ void NewTrip()
 
 	//DEBUG
 	int iteration = 0;
-	int log = 0;
+	int logNum = 0;
 	int fileHandle;
 	//DEBUG
 
@@ -397,10 +459,10 @@ void NewTrip()
 		int newlog = (iteration*2)/r2;
 
 		if (newlog > 0) {
-			log++;
+			logNum++;
 			iteration = 0;
 		}
-		printf("log = %d\n", log);
+		printf("log = %d\n", logNum);
 		int r = rand() % 10;
 		printf("random = %d\n", r);
 		//DEBUG
@@ -423,12 +485,12 @@ void NewTrip()
 		strcpy(temp, gpsdat);
 		printf("%s\n", temp);
 
-		fileHandle = writeToSd(temp,log,sizeof(temp));
+		fileHandle = writeToSd(temp,logNum,sizeof(temp));
 		while (fileHandle == -1) {
 			printf("Trying again, re-init sd-card\n");
 			Init_SDCard();
 			strcpy(temp,gpsdat);
-			fileHandle = writeToSd(temp,log,sizeof(temp));
+			fileHandle = writeToSd(temp,logNum,sizeof(temp));
 		}
 
 		/* DEBUG
@@ -450,7 +512,7 @@ void NewTrip()
 		//printf("%s\n", altitude);
 
 		char logname[20];
-		sprintf(logname, "log%d", log);
+		sprintf(logname, "log%d", logNum);
 
 		DrawGpsData(time, latitude, longitude, altitude, logname);
 
