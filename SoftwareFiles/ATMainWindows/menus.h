@@ -78,6 +78,14 @@ typedef enum
 #define NEXT_X2				375
 #define NEXT_Y2				125
 
+/* polling speed */
+
+#define WALKING_X1
+#define WALKING_Y1
+#define WALKING_X2
+#define WALKING_Y2
+
+
 void GetNextMenu(Point p);
 void MainMenu(void);
 void NewTrip(void);

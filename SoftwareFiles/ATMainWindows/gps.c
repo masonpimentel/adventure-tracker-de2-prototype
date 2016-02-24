@@ -168,15 +168,17 @@ void extractGpsLatitude(char* GpsData, char* ret)
 	token = strtok(NULL, " ");
 
 	char degree[3];
-	memcpy(degree, token, 3);
-	degree[3] = '\0';
+	memcpy(degree, token, 2);
+	degree[2] = '\0';
 
 	char minute[8];
 	memcpy(minute, token+2, 7);
 	minute[7] = '\0';
 
 	float fdegree = atof(degree);
+	printf("fdegree = %f\n", fdegree);
 	float fminute = atof(minute);
+	printf("fminute = %f\n", fminute);
 
 	float latitude = fdegree + fminute/(60.0);
 	char temp[64];

@@ -22,6 +22,14 @@
 #include "sdcard.h"
 #include "Altera_UP_SD_Card_Avalon_Interface.h"
 
+//insert dummy values, and randomly increase logNum
+//#define DEBUG
+
+//delays
+#define WALKING		3000000
+#define BIKING		2000000
+#define SKIING		1000000
+
 int redraw = 1;
 int logNum = 0;
 int initial = 1;
@@ -69,6 +77,7 @@ void GetNextMenu(Point p)
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
+				logNum+=1;
 			}
 			break;
 		case (EASTEREGGS):
@@ -113,6 +122,54 @@ void PrevNext(Point p, int minLog, int maxLogs)
 		}
 
 		//next
+		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
+			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
+		{
+			current_menu_func = &PastTrips;
+			printf("log = %d, maxlog = %d\n", logNum, maxLogs);
+			if (logNum >= maxLogs - 1) {
+				logNum = 0;
+			}
+			else
+				logNum++;
+			redraw = 1;
+		}
+		else
+			return;
+
+}
+
+//this is for changing speed in new trip
+void changeSpeed(Point p)
+{
+		//walking
+		if((p.x > WALKING_X1) && (p.x < WALKING_X2) &&
+				(p.y > WALKING_Y1) && (p.y < WALKING_Y2))
+		{
+			current_menu_func = &PastTrips;
+			printf("log = %d, minlog = %d\n", logNum, minLog);
+			if (logNum <= 0) {
+				logNum = maxLogs-1;
+			}
+			else
+				logNum--;
+			redraw = 1;
+		}
+
+		//biking
+		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
+			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
+		{
+			current_menu_func = &PastTrips;
+			printf("log = %d, maxlog = %d\n", logNum, maxLogs);
+			if (logNum >= maxLogs - 1) {
+				logNum = 0;
+			}
+			else
+				logNum++;
+			redraw = 1;
+		}
+		//skiing
 		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
 			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
 		{
@@ -227,6 +284,7 @@ void PastTrips()
 
 void NewTrip()
 {
+	int fileHandle;
 	char time[100];
 	char latitude[100];
 	char longitude[100];
@@ -240,26 +298,7 @@ void NewTrip()
 	/* update the menu state variable */
 	current_menu_val = NEWTRIP;
 	if(redraw)
-	{
-
-		/* set the screen background */
-		FilledRectangle(0,0,800,480, DARK_GREEN);
-		DrawButton(0, 0, 800, 40, "Logging trip data...", sizeof ("Logging trip data..."), WHITE, BLACK);
-
-		/* draw data screen and position screen */
-		DrawButton(50, 50, 400, 430, "", 0, BLACK, GRAY);
-		DrawButton(400, 50, 750, 430, "", 0, BLACK, SADDLE_BROWN);
-		VLine(400, 50, 380, BLACK);
-		Triangle(565, 240, 585, 240, 575, 220, BLACK);
-		Fill(575, 230, BLACK, BLACK);
-
-		/* Back to main menu button */
-		DrawButton(650, 430, 800, 480, "Main Menu", sizeof("Main Menu")-1, BLACK, BURLY_WOOD);
-
-		/* draw the GPS data labels*/
-		DrawGpsLabels();
-		redraw = 0;
-	}
+		DrawGpsMenu(&redraw);
 
 	/* delay for debouncing screen */
 	int i;
@@ -269,15 +308,14 @@ void NewTrip()
 
 	char temp[256];
 
-	//DEBUG
+	#ifdef DEBUG
 	int iteration = 0;
 	int logNum = 0;
-	int fileHandle;
-	//DEBUG
+	#endif //DEBUG
 
 	while(1)
 	{
-		//DEBUG
+		#ifdef DEBUG
 		printf("iteration = %d\n", iteration);
 		int r2 = rand()%100;
 		printf("r2 = %d\n", r2);
@@ -290,7 +328,7 @@ void NewTrip()
 		printf("log = %d\n", logNum);
 		int r = rand() % 10;
 		printf("random = %d\n", r);
-		//DEBUG
+
 
 		char temptime[256] = "Time: 3:3";
 		char time[256];
@@ -309,7 +347,27 @@ void NewTrip()
 
 		strcpy(temp, gpsdat);
 		printf("%s\n", temp);
+		#endif
 
+		#ifndef DEBUG
+		gpsdat = getGpsData();
+		strcpy(temp, gpsdat);
+		printf("%s\n", gpsdat);
+		#endif
+
+		extractGpsTime(temp , time);
+		printf("%s\n", time);
+		strcpy(temp, gpsdat);
+		extractGpsLatitude(temp, latitude);
+		printf("%s\n", latitude);
+		strcpy(temp, gpsdat);
+		extractGpsLongitude(temp, longitude);
+		printf("%s\n", longitude);
+		strcpy(temp, gpsdat);
+		extractGpsAltitude(temp,  altitude);
+		printf("%s\n", altitude);
+
+		strcpy(temp, gpsdat);
 		fileHandle = writeToSd(temp,logNum,sizeof(temp));
 		while (fileHandle == -1) {
 			printf("Trying again, re-init sd-card\n");
@@ -318,32 +376,16 @@ void NewTrip()
 			fileHandle = writeToSd(temp,logNum,sizeof(temp));
 		}
 
-		/* DEBUG
-		gpsdat = getGpsData();
-		strcpy(temp, gpsdat);
-		printf("%s\n", gpsdat);
-		*/
-
-		extractGpsTime(temp , time);
-		//printf("%s\n", time);
-		strcpy(temp, gpsdat);
-		extractGpsLatitude(temp, latitude);
-		//printf("%s\n", latitude);
-		strcpy(temp, gpsdat);
-		extractGpsLongitude(temp, longitude);
-		//printf("%s\n", longitude);
-		strcpy(temp, gpsdat);
-		extractGpsAltitude(temp,  altitude);
-		//printf("%s\n", altitude);
-
 		char logname[20];
 		sprintf(logname, "log%d", logNum);
 
 		DrawGpsData(time, latitude, longitude, altitude, logname);
 
+		#ifdef DEBUG
 		iteration++;
+		#endif
 
-		for(i=0; i<1000000; i++)
+		for(i=0; i<BIKING; i++)
 		{
 			if(ScreenTouched())
 			{
