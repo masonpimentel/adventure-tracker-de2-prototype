@@ -13,16 +13,21 @@
 #include "sdcard.h"
 #include <stdio.h>
 
-typedef struct {
-	float delta_long;
-	float delta_lat;
-	float min_long;
-	float min_lat;
-	float max_long;
-	float max_lat;
-	int pixels_per_division_x;
-	int pixels_per_division_y;
-} path_info;
+int RPIndex = 0;
+RTPoint REAL_POINTS[MAX_REAL_POINTS];
+/*
+ * These values are chosen based off of displaying an area of approximately
+ * 200mx200m on the 380pixel x 380pixel display window
+ *
+ * Calculated by: 380Pixels/(delta_long/lat)
+ * in this case delta_long = 0.002 which corresponds with approximately
+ * 200 meters.
+ */
+//int RTPixels_per_degree_x = 190000;
+//int RTPixels_per_degree_y = 190000;
+
+int RTPixels_per_degree_x = 19000;
+int RTPixels_per_degree_y = 19000;
 
 float ExtractLongitude(char* gpsdat)
 {
@@ -172,6 +177,76 @@ int DrawPath(int log)
 	}
 	alt_up_sd_card_fclose(fd);
 	return 0;
+}
+
+
+void updateCenterPixel(int latitude, int longitude) {
+	//Insert point into array
+	RTPoint rtp = REAL_POINTS[RPIndex];
+	rtp.latitude = latitude;
+	rtp.longitude = longitude;
+	// Most recent point is in the center of the screen
+	rtp.pixel.x = 580;
+	rtp.pixel.y = 190;
+}
+
+void updateOtherPixels()
+{
+	int i;
+	RTPoint center = REAL_POINTS[RPIndex];
+	// The delta values from the center pixel
+	float d_lat, d_long;
+	for(i = 0; i < MAX_REAL_POINTS; i++){
+		RTPoint rtp = REAL_POINTS[i];
+		if(i != RPIndex){
+			d_long = center.longitude - rtp.longitude;
+			d_lat = center.latitude - rtp.latitude;
+			rtp.pixel.x = RTPixels_per_degree_x*d_long+center.pixel.x;
+			rtp.pixel.y = center.pixel.y-RTPixels_per_degree_y*d_lat;
+		}
+	}
+}
+
+int isValidPixel(XYPixel p)
+{
+	return((p.x < 780 && p.x > 400) && (p.y > 50 && p.y < 430));
+}
+
+void drawRTPath()
+{
+	int i = (RPIndex + 1)%MAX_REAL_POINTS;
+
+	RTPoint rtpCurrent, rtpNext;
+
+	while(i!=RPIndex){
+		rtpCurrent = REAL_POINTS[i];
+		rtpNext = REAL_POINTS[(i+1)%MAX_REAL_POINTS];
+		if((rtpCurrent.pixel.x != rtpNext.pixel.x)&&(rtpCurrent.pixel.y != rtpNext.pixel.y)){
+			if(isValidPixel(rtpCurrent.pixel)&&isValidPixel(rtpNext.pixel)){
+				Line(rtpCurrent.pixel.x,
+						rtpCurrent.pixel.y,
+						rtpNext.pixel.x,
+						rtpNext.pixel.y,
+						BLACK);
+			}
+
+		}
+		// check that pixels will be different
+		// if so, draw line
+		// otherwise nothing
+
+		i = (i+1)%MAX_REAL_POINTS;
+	}
+}
+
+void updateRealTimePath(int latitude, int longitude)
+{
+	updateCenterPixel(latitude, longitude);
+	updateOtherPixels();
+
+	drawRTPath();
+
+	RPIndex = (RPIndex + 1)%MAX_REAL_POINTS;
 }
 
 
