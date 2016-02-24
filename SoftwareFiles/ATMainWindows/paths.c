@@ -26,8 +26,8 @@ RTPoint REAL_POINTS[MAX_REAL_POINTS];
 //int RTPixels_per_degree_x = 190000;
 //int RTPixels_per_degree_y = 190000;
 
-int RTPixels_per_degree_x = 19000;
-int RTPixels_per_degree_y = 19000;
+int RTPixels_per_degree_x = 1900000;
+int RTPixels_per_degree_y = 1900000;
 
 float ExtractLongitude(char* gpsdat)
 {
@@ -180,14 +180,15 @@ int DrawPath(int log)
 }
 
 
-void updateCenterPixel(int latitude, int longitude) {
+void updateCenterPixel(float latitude, float longitude) {
 	//Insert point into array
 	RTPoint rtp = REAL_POINTS[RPIndex];
 	rtp.latitude = latitude;
 	rtp.longitude = longitude;
 	// Most recent point is in the center of the screen
-	rtp.pixel.x = 580;
-	rtp.pixel.y = 190;
+	rtp.pixel.x = 590;
+	rtp.pixel.y = 240;
+	REAL_POINTS[RPIndex] = rtp;
 }
 
 void updateOtherPixels()
@@ -203,6 +204,8 @@ void updateOtherPixels()
 			d_lat = center.latitude - rtp.latitude;
 			rtp.pixel.x = RTPixels_per_degree_x*d_long+center.pixel.x;
 			rtp.pixel.y = center.pixel.y-RTPixels_per_degree_y*d_lat;
+
+			REAL_POINTS[i] = rtp;
 		}
 	}
 }
@@ -217,11 +220,12 @@ void drawRTPath()
 	int i = (RPIndex + 1)%MAX_REAL_POINTS;
 
 	RTPoint rtpCurrent, rtpNext;
-
+	/* clear the previous path */
+	DrawButton(400, 50, 780, 430, "", 0, BLACK, SADDLE_BROWN);
 	while(i!=RPIndex){
 		rtpCurrent = REAL_POINTS[i];
 		rtpNext = REAL_POINTS[(i+1)%MAX_REAL_POINTS];
-		if((rtpCurrent.pixel.x != rtpNext.pixel.x)&&(rtpCurrent.pixel.y != rtpNext.pixel.y)){
+		//if((rtpCurrent.pixel.x != rtpNext.pixel.x)&&(rtpCurrent.pixel.y != rtpNext.pixel.y)){
 			if(isValidPixel(rtpCurrent.pixel)&&isValidPixel(rtpNext.pixel)){
 				Line(rtpCurrent.pixel.x,
 						rtpCurrent.pixel.y,
@@ -230,7 +234,7 @@ void drawRTPath()
 						BLACK);
 			}
 
-		}
+		//}
 		// check that pixels will be different
 		// if so, draw line
 		// otherwise nothing
@@ -239,7 +243,7 @@ void drawRTPath()
 	}
 }
 
-void updateRealTimePath(int latitude, int longitude)
+void updateRealTimePath(float latitude, float longitude)
 {
 	updateCenterPixel(latitude, longitude);
 	updateOtherPixels();

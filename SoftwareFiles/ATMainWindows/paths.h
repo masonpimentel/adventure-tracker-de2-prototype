@@ -29,7 +29,7 @@ typedef struct {
 	int pixels_per_division_y;
 } path_info;
 
-#define MAX_REAL_POINTS 	512
+#define MAX_REAL_POINTS 	64
 
 
 
@@ -41,7 +41,7 @@ typedef struct {
 /* log is the number of the trip that we want to display */
 int DrawPath(int log);
 float ExtractAltitude(char* gpsdat);
-void updateRealTimePath(int latitude, int longitude);
+void updateRealTimePath(float latitude, float longitude);
 
 
 #endif /* PATHS_H_ */
