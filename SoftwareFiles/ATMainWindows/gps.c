@@ -176,10 +176,7 @@ void extractGpsLatitude(char* GpsData, char* ret)
 	minute[7] = '\0';
 
 	float fdegree = atof(degree);
-	printf("fdegree = %f\n", fdegree);
 	float fminute = atof(minute);
-	printf("fminute = %f\n", fminute);
-
 	float latitude = fdegree + fminute/(60.0);
 	char temp[64];
 	snprintf(temp, 64, "%f", latitude);
@@ -232,7 +229,7 @@ void extractGpsAltitude(char* GpsData, char* ret)
 
 }
 
-char *getGpsData(){
+char *getGpsData(int *reinit){
 	char time[256] = "Time: ";
 	char lat[30] = "Latitude: ";
 	char lon[30] = "Longitude: ";
@@ -245,7 +242,11 @@ char *getGpsData(){
 		data[j]= '\0';
 	}
 
-	Init_Gps();
+	if (*reinit == 1) {
+		Init_Gps();
+		*reinit = 0;
+		printf("in here\n");
+	}
 
 	char temp;
 	temp = getcharGps();

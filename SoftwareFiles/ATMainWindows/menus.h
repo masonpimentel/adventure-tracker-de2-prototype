@@ -80,10 +80,28 @@ typedef enum
 
 /* polling speed */
 
-#define WALKING_X1
-#define WALKING_Y1
-#define WALKING_X2
-#define WALKING_Y2
+#define WALKING_X1			62
+#define WALKING_Y1			180
+#define WALKING_X2			163
+#define WALKING_Y2			205
+
+#define BIKING_X1			174
+#define BIKING_Y1			180
+#define BIKING_X2			274
+#define BIKING_Y2			205
+
+#define SKIING_X1			287
+#define SKIING_Y1			180
+#define SKIING_X2			386
+#define SKIING_Y2			205
+
+#define WALKING				0
+#define BIKING				1
+#define SKIING				2
+
+#define WALKING_DELAY		3000000
+#define BIKING_DELAY		2000000
+#define SKIING_DELAY		1000000
 
 
 void GetNextMenu(Point p);
@@ -92,6 +110,7 @@ void NewTrip(void);
 void PastTrips(void);
 void EasterEggs(void);
 void DrawMainMenu();
+void ChangeSpeed(Point p, int *redrawButtons);
 
 
 #endif /* MENUS_H_ */

@@ -9,7 +9,8 @@
 #define NEW_TRIP_H_
 
 void DrawGpsLabels(void);
-void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* logname);
+void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* logname, int curMode, int *redrawButtons,
+		int *initializing);
 void DrawGpsMenu(int *redraw);
 
 #endif /* NEW_TRIP_H_ */

@@ -25,15 +25,14 @@
 //insert dummy values, and randomly increase logNum
 //#define DEBUG
 
-//delays
-#define WALKING		3000000
-#define BIKING		2000000
-#define SKIING		1000000
-
 int redraw = 1;
+int redrawButtons = 1;
 int logNum = 0;
 int initial = 1;
 int logExists = 0;
+int curMode = 0;
+int reinit = 1;
+int initializing = 1;
 
 void DrawMainMenu()
 {
@@ -112,7 +111,6 @@ void PrevNext(Point p, int minLog, int maxLogs)
 				(p.y > PREV_Y1) && (p.y < PREV_Y2))
 		{
 			current_menu_func = &PastTrips;
-			printf("log = %d, minlog = %d\n", logNum, minLog);
 			if (logNum <= 0) {
 				logNum = maxLogs-1;
 			}
@@ -126,7 +124,6 @@ void PrevNext(Point p, int minLog, int maxLogs)
 			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
 		{
 			current_menu_func = &PastTrips;
-			printf("log = %d, maxlog = %d\n", logNum, maxLogs);
 			if (logNum >= maxLogs - 1) {
 				logNum = 0;
 			}
@@ -140,51 +137,38 @@ void PrevNext(Point p, int minLog, int maxLogs)
 }
 
 //this is for changing speed in new trip
-void changeSpeed(Point p)
+void ChangeSpeed(Point p, int *redrawButtons)
 {
 		//walking
 		if((p.x > WALKING_X1) && (p.x < WALKING_X2) &&
 				(p.y > WALKING_Y1) && (p.y < WALKING_Y2))
 		{
-			current_menu_func = &PastTrips;
-			printf("log = %d, minlog = %d\n", logNum, minLog);
-			if (logNum <= 0) {
-				logNum = maxLogs-1;
-			}
-			else
-				logNum--;
+			current_menu_func = &NewTrip;
+			curMode = WALKING;
 			redraw = 1;
+			*redrawButtons = 1;
 		}
 
 		//biking
-		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
-			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
+		else if((p.x > BIKING_X1) && (p.x < BIKING_X2) &&
+			(p.y > BIKING_Y1) && (p.y < BIKING_Y2))
 		{
-			current_menu_func = &PastTrips;
-			printf("log = %d, maxlog = %d\n", logNum, maxLogs);
-			if (logNum >= maxLogs - 1) {
-				logNum = 0;
-			}
-			else
-				logNum++;
+			current_menu_func = &NewTrip;
+			curMode = BIKING;
 			redraw = 1;
+			*redrawButtons = 1;
 		}
 		//skiing
-		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
-			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
+		else if((p.x > 0) && (p.x < 800) &&
+			(p.y > 0) && (p.y < 480))
 		{
-			current_menu_func = &PastTrips;
-			printf("log = %d, maxlog = %d\n", logNum, maxLogs);
-			if (logNum >= maxLogs - 1) {
-				logNum = 0;
-			}
-			else
-				logNum++;
+			current_menu_func = &NewTrip;
+			curMode = SKIING;
 			redraw = 1;
+			*redrawButtons = 1;
 		}
 		else
 			return;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -241,8 +225,6 @@ void PastTrips()
 	if (initial == 1)
 		logNum = maxLogs-1;
 
-	printf("number of logs = %d\n", maxLogs);
-
 	//cover up the "please insert sd card" if it's still there
 	FilledRectangle(50,431,625,480, DARK_GREEN);
 
@@ -285,6 +267,8 @@ void PastTrips()
 void NewTrip()
 {
 	int fileHandle;
+	int timeDelay;
+
 	char time[100];
 	char latitude[100];
 	char longitude[100];
@@ -350,42 +334,58 @@ void NewTrip()
 		#endif
 
 		#ifndef DEBUG
-		gpsdat = getGpsData();
+		gpsdat = getGpsData(&reinit);
 		strcpy(temp, gpsdat);
 		printf("%s\n", gpsdat);
 		#endif
 
 		extractGpsTime(temp , time);
-		printf("%s\n", time);
 		strcpy(temp, gpsdat);
 		extractGpsLatitude(temp, latitude);
-		printf("%s\n", latitude);
 		strcpy(temp, gpsdat);
 		extractGpsLongitude(temp, longitude);
-		printf("%s\n", longitude);
 		strcpy(temp, gpsdat);
 		extractGpsAltitude(temp,  altitude);
-		printf("%s\n", altitude);
 
-		strcpy(temp, gpsdat);
-		fileHandle = writeToSd(temp,logNum,sizeof(temp));
-		while (fileHandle == -1) {
-			printf("Trying again, re-init sd-card\n");
-			Init_SDCard();
-			strcpy(temp,gpsdat);
-			fileHandle = writeToSd(temp,logNum,sizeof(temp));
+		//check if gps is still trying to get a fix
+		if (atoi(latitude) == 0) {
+			printf("setting to 1\n");
+			initializing = 1;
 		}
+		else
+			initializing = 0;
+
+		if (initializing == 0) {
+			strcpy(temp, gpsdat);
+			fileHandle = writeToSd(temp,logNum,sizeof(temp));
+			while (fileHandle == -1) {
+				printf("Trying again, re-init sd-card\n");
+				Init_SDCard();
+				strcpy(temp,gpsdat);
+				fileHandle = writeToSd(temp,logNum,sizeof(temp));
+			}
+		}
+		else
+			printf("Not writing to SD!\n");
 
 		char logname[20];
 		sprintf(logname, "log%d", logNum);
 
-		DrawGpsData(time, latitude, longitude, altitude, logname);
+		printf("before init is %lf, %d\n", initializing, initializing);
+		DrawGpsData(time, latitude, longitude, altitude, logname, curMode, &redrawButtons, &initializing);
 
 		#ifdef DEBUG
 		iteration++;
 		#endif
 
-		for(i=0; i<BIKING; i++)
+		if (curMode == WALKING)
+			timeDelay = WALKING_DELAY;
+		else if (curMode == BIKING)
+			timeDelay = BIKING_DELAY;
+		else
+			timeDelay = SKIING_DELAY;
+
+		for(i=0; i<timeDelay; i++)
 		{
 			if(ScreenTouched())
 			{
@@ -396,6 +396,7 @@ void NewTrip()
 touched:
 
 	p = GetRelease();
+	ChangeSpeed(p, &redrawButtons);
 	GetNextMenu(p);
 	current_menu_func();
 }

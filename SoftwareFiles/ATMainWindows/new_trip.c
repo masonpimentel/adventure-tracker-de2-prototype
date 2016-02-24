@@ -7,6 +7,7 @@
 
 #include "new_trip.h"
 #include "graphics.h"
+#include "menus.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,25 +21,47 @@ void DrawGpsLabels()
 	DrawString(160, 90, "Current Trip: ", sizeof("Current Trip: ")-1, NAVY, GRAY);
 }
 
-void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* logname)
+void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, char* logname, int curMode, int *redrawButtons,
+		int *initializing)
 {
+	int backgroundColor;
 	DrawString(80, 300, time, strlen(time), BLACK, GRAY);
 	DrawString(225, 300, latitude, strlen(latitude), BLACK, GRAY);
 	DrawString(225, 395, longitude, strlen(longitude), BLACK, GRAY);
 	DrawString(80, 395, altitude, strlen(altitude), BLACK, GRAY);
 	DrawString(205, 110, logname, strlen(logname), BLACK, GRAY);
 
-	//walking
-	DrawButton(62,180,163,205, "Walking", sizeof("Walking"), WHITE, GREEN);
-	//biking
-	DrawButton(174,180,274,205, "Biking", sizeof("Biking"), WHITE, BLUE);
-	//skiing
-	DrawButton(287,180,386,205, "Skiing", sizeof("Skiing"), WHITE, NAVY);
+	if (*redrawButtons == 1) {
+		//walking
+		if (curMode == WALKING)
+			backgroundColor = GREEN;
+		else
+			backgroundColor = BLUE;
+		DrawButton(62,180,163,205, "Walking", sizeof("Walking"), WHITE, backgroundColor);
+		//biking
+		if (curMode == BIKING)
+			backgroundColor = GREEN;
+		else
+			backgroundColor = BLUE;
+		DrawButton(174,180,274,205, "Biking", sizeof("Biking"), WHITE, backgroundColor);
+		//skiing
+		if (curMode == SKIING)
+			backgroundColor = GREEN;
+		else
+			backgroundColor = BLUE;
+		DrawButton(287,180,386,205, "Skiing", sizeof("Skiing"), WHITE, backgroundColor);
+
+		*redrawButtons = 0;
+	}
 	//cover up the "please insert sd card" if it's still there
 	FilledRectangle(50,431,625,480, DARK_GREEN);
 
 	//if no fix yet
-	//FilledRectangle
+	printf("initializing is %lf, %d\n", *initializing, *initializing);
+	if (*initializing == 1) {
+		DrawString(80,235, "Attempting to get a fix...", sizeof("Attempting to get a fix..."), RED, GRAY);
+		printf("here!\n");
+	}
 }
 
 void DrawGpsMenu(int *redraw)

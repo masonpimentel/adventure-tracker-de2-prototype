@@ -43,16 +43,13 @@ int moveToEnd(int length, char* logname) {
 	int character = 1;
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
-		printf("File opened for scanning, filehandle = %d\n", myFileHandle);
 
 		while (character != -1) {
 			character = alt_up_sd_card_read(myFileHandle);
 		}
-		printf("Done scanning!!!\n");
 		return myFileHandle;
 	}
 	else {
-		printf("File not opened for scanning, creating\n");
 		myFileHandle = alt_up_sd_card_fopen(logname, true);
 		if (myFileHandle < 0) {
 			Init_SDCard();
@@ -86,18 +83,14 @@ int writeToSd(char* string, char log, int length) {
 
 	sprintf(logname, "log%d.txt", log);
 
-	printf("logname = %s\n", logname);
-
 	myFileHandle = moveToEnd(length, logname);
 
 	if(myFileHandle >= 0) {
-		printf("File Opened for writing\n");
 
 		strcpy(modified, string);
 		strcat(modified, " x");
 		printf("Writing '%s' to SD card\n", modified);
 		length = strlen(modified);
-		printf ("length of modified: %d\n", length);
 		for(i = 0; i < length; i ++) {
 			if(alt_up_sd_card_write(myFileHandle,modified[i]) == false){
 				printf("Error writing to file...\n");
@@ -129,15 +122,12 @@ void readFromSd(int log, int entry) {
 
 	sprintf(logname, "log%d.txt", log);
 
-	//printf("logname in read = %s\n", logname);
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
-		//printf("File Opened for reading\n");
 
 		for (i=0; i<entry; i++) {
 			while(character != 'x') {
 				character = alt_up_sd_card_read(myFileHandle);
-				//printf("ASCII character %i (decimal) read\n", character);
 			}
 			character = 'a';
 		}
@@ -145,7 +135,6 @@ void readFromSd(int log, int entry) {
 			character = alt_up_sd_card_read(myFileHandle);
 			printf("ASCII character %i (decimal) read\n", character);
 		}
-		//printf("Done!!!\n");
 
 	}
 	else {
@@ -169,7 +158,6 @@ int numEntries(int log) {
 	char logname[20];
 
 	sprintf(logname, "log%d.txt", log);
-	//printf("logname in numEntries = %s\n", logname);
 
 	if((myFileHandle = alt_up_sd_card_fopen(logname, false)) != -1) {
 
@@ -208,7 +196,6 @@ void lastLogEntry(int log, char* end, int part)
 {
 	int toSeek = numEntries(log) - 1;
 
-	printf("toSeek = %d\n", toSeek);
 
 	short int myFileHandle;
 	int i;
@@ -228,7 +215,6 @@ void lastLogEntry(int log, char* end, int part)
 			while(character != 'x') {
 				character = alt_up_sd_card_read(myFileHandle);
 			}
-			//printf("incremented\n");
 			character = 'a';
 		}
 		character = 'a';
@@ -249,7 +235,6 @@ void lastLogEntry(int log, char* end, int part)
 				character = alt_up_sd_card_read(myFileHandle);
 				if (character != 'x') {
 					charHolder[0] = character;
-					//printf("(f)should be putting in %s\n", charHolder);
 					strcat(end,charHolder);
 				}
 				divider++;
@@ -293,11 +278,8 @@ int reOpenFile(int logNum, int fd) {
 	int newLog;
 
 	int result = alt_up_sd_card_fclose(fd);
-	printf("result in re-open = %d\n", result);
 
 	snprintf(logname, 20, "log%d.txt", logNum);
-
-	printf("attempting to re-open %s\n", logname);
 
 	if((newLog = alt_up_sd_card_fopen(logname, false)) != -1)
 		printf("File re-opened, filehandle = %d\n", newLog);
@@ -327,8 +309,6 @@ void getLogEntry(int log, char* buf, int part, int entry, int alreadySeeked, int
 {
 
 	int toSeek = entry-alreadySeeked;
-
-	printf("toSeek in getLogEntry = %d\n", toSeek);
 
 	int i;
 	char character = 'a';

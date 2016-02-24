@@ -8,7 +8,7 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-char* getGpsData(void);
+char *getGpsData(int *reinit);
 void Init_Gps(void);
 void extractGpsTime(char* GpsData, char* ret);
 void extractGpsLatitude(char* GpsData, char* ret);
