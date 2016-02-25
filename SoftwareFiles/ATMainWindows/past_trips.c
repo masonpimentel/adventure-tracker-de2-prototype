@@ -57,11 +57,9 @@ void DrawPastTrips(int *redraw)
 	DrawButton(0, 0, 800, 40, "Past Trips", sizeof ("Past Trips"), WHITE, BLACK);
 
 	/* draw data screen and position screen */
-	DrawButton(50, 50, 400, 430, "", 0, BLACK, GRAY);
-	DrawButton(400, 50, 750, 430, "", 0, BLACK, SADDLE_BROWN);
+	DrawButton(20, 50, 400, 430, "", 0, BLACK, GRAY);
+	DrawButton(400, 50, 780, 430, "", 0, BLACK, SADDLE_BROWN);
 	VLine(400, 50, 380, BLACK);
-	Triangle(565, 240, 585, 240, 575, 220, BLACK);
-	Fill(575, 230, BLACK, BLACK);
 
 	/* draw past log and next log buttons */
 	DrawButton(75, 75, 212, 125, "Prev", sizeof("Past"), WHITE, BLUE);
@@ -130,7 +128,10 @@ void DrawTripData(int maxLogs, int fd, int maxEntries, int logNum, int logExists
 	double nextLatDbl = 0;
 	double startLongDbl = 0;
 	double nextLongDbl = 0;
-
+	if(maxEntries < 2)
+	{
+		return;
+	}
 	getLogEntry(logNum, start, 0, 0, 0, 0, fd);
 	printf("start = %s\n", start);
 	printf("max entries = %d\n", maxEntries);

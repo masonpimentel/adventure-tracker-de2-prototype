@@ -134,6 +134,7 @@ int DrawPath(int log)
 	nextEntry(buf, fd);
 	GpsToPoint(buf, &pathInfo, &current_point);
 	nextEntry(buf, fd);
+	DrawButton(current_point.x-4, current_point.y, current_point.x+3, current_point.y+14, "S", strlen("S"), WHITE, BLACK);
 	while(buf[0] != '\0')
 	{
 		previous_point.x = current_point.x;
@@ -149,6 +150,7 @@ int DrawPath(int log)
 		}
 		nextEntry(buf, fd);
 	}
+	DrawButton(current_point.x-4, current_point.y, current_point.x+3, current_point.y+14, "E", strlen("E"), WHITE, BLACK);
 	alt_up_sd_card_fclose(fd);
 	return 0;
 }

@@ -139,15 +139,21 @@ ACDS_VERSION := 13.0sp1
 # Define path to the application ELF. 
 # It may be used by the makefile fragments so is defined before including them. 
 # 
-ELF := ATMainWindows.elf
+ELF := ATMain.elf
 
 # Paths to C, C++, and assembly source files.
 C_SRCS += Fill.c
 C_SRCS += OutGraphicsCharFont1.c
+C_SRCS += distance.c
+C_SRCS += drawing.c
 C_SRCS += gps.c
 C_SRCS += graphics.c
 C_SRCS += main.c
 C_SRCS += menus.c
+C_SRCS += misc.c
+C_SRCS += new_trip.c
+C_SRCS += past_trips.c
+C_SRCS += paths.c
 C_SRCS += sdcard.c
 C_SRCS += serial_new.c
 CXX_SRCS :=
@@ -184,7 +190,7 @@ CRT0 :=
 SYS_LIB :=
 
 # Define path to the root of the BSP.
-BSP_ROOT_DIR := ../ATMainWindows_bsp/
+BSP_ROOT_DIR := ../ATMain_bsp/
 
 # List of application specific include directories, library directories and library names
 APP_INCLUDE_DIRS :=

@@ -55,18 +55,21 @@ int GetNextMenu(Point p)
 			{
 				current_menu_func = &NewTrip;
 				redraw = 1;
+				return 0;
 			}
 			else if((p.x > 50) && (p.x < 375) &&
 					   (p.y > 255) && (p.y < 430))
 			{
 				current_menu_func = &EasterEggs;
 				redraw = 1;
+				return 0;
 			}
 			else if ((p.x > 50) && (p.x < 375) &&
 						(p.y > 50) && (p.y < 225))
 			{
 				current_menu_func = &PastTrips;
 				redraw = 1;
+				return 0;
 			}
 			break;
 
@@ -76,6 +79,7 @@ int GetNextMenu(Point p)
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
+				return 0;
 			}
 			break;
 		case (EASTEREGGS):
@@ -84,6 +88,7 @@ int GetNextMenu(Point p)
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
+				return 0;
 			}
 			break;
 
@@ -93,13 +98,14 @@ int GetNextMenu(Point p)
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
+				return 0;
 			}
 			break;
 
 		default:
-			return -1;
+			break;
 	}
-	return 0;
+	return -1;
 }
 
 //this is for switching logs in past trips
@@ -405,12 +411,11 @@ touched:
 	p = GetRelease();
 	ChangeSpeed(p, &redrawButtons);
 	int _switch = GetNextMenu(p);
-	if(_switch)
+	if(_switch == -1)
 	{
-		current_menu_func();
-	}
-	else
 		goto bad_touch;
+	}
+	current_menu_func();
 }
 
 

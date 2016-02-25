@@ -104,7 +104,7 @@ typedef enum
 #define SKIING_DELAY		1000000
 
 
-void GetNextMenu(Point p);
+int GetNextMenu(Point p);
 void MainMenu(void);
 void NewTrip(void);
 void PastTrips(void);

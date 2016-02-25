@@ -27,12 +27,12 @@
 
 int redraw = 1;
 int redrawButtons = 1;
-int logNum = 0;
-int initial = 1;
 int logExists = 0;
 int curMode = 0;
 int reinit = 1;
 int initializing = 1;
+
+int CurLogNum = -1;
 
 void DrawMainMenu()
 {
@@ -45,7 +45,7 @@ void DrawMainMenu()
 ////////////////////////////////////////////////////////////////////////////////////////
 //CHANGING PAGES
 ////////////////////////////////////////////////////////////////////////////////////////
-void GetNextMenu(Point p)
+int GetNextMenu(Point p)
 {
 	switch (current_menu_val)
 	{
@@ -76,7 +76,6 @@ void GetNextMenu(Point p)
 			{
 				current_menu_func = &MainMenu;
 				redraw = 1;
-				logNum+=1;
 			}
 			break;
 		case (EASTEREGGS):
@@ -98,24 +97,23 @@ void GetNextMenu(Point p)
 			break;
 
 		default:
-			break;
+			return -1;
 	}
+	return 0;
 }
 
 //this is for switching logs in past trips
-void PrevNext(Point p, int minLog, int maxLogs)
+void PrevNext(Point p, int minLog, int maxLogs, int* logNum)
 {
-		initial = 0;
 		//prev
 		if((p.x > PREV_X1) && (p.x < PREV_X2) &&
 				(p.y > PREV_Y1) && (p.y < PREV_Y2))
 		{
-			current_menu_func = &PastTrips;
 			if (logNum <= 0) {
-				logNum = maxLogs-1;
+				*logNum = maxLogs-1;
 			}
 			else
-				logNum--;
+				(*logNum)--;
 			redraw = 1;
 		}
 
@@ -123,12 +121,11 @@ void PrevNext(Point p, int minLog, int maxLogs)
 		else if((p.x > NEXT_X1) && (p.x < NEXT_X2) &&
 			(p.y > NEXT_Y1) && (p.y < NEXT_Y2))
 		{
-			current_menu_func = &PastTrips;
-			if (logNum >= maxLogs - 1) {
-				logNum = 0;
+			if (*logNum >= maxLogs - 1) {
+				*logNum = 0;
 			}
 			else
-				logNum++;
+				(*logNum)++;
 			redraw = 1;
 		}
 		else
@@ -143,7 +140,6 @@ void ChangeSpeed(Point p, int *redrawButtons)
 		if((p.x > WALKING_X1) && (p.x < WALKING_X2) &&
 				(p.y > WALKING_Y1) && (p.y < WALKING_Y2))
 		{
-			current_menu_func = &NewTrip;
 			curMode = WALKING;
 			redraw = 1;
 			*redrawButtons = 1;
@@ -153,16 +149,14 @@ void ChangeSpeed(Point p, int *redrawButtons)
 		else if((p.x > BIKING_X1) && (p.x < BIKING_X2) &&
 			(p.y > BIKING_Y1) && (p.y < BIKING_Y2))
 		{
-			current_menu_func = &NewTrip;
 			curMode = BIKING;
 			redraw = 1;
 			*redrawButtons = 1;
 		}
 		//skiing
-		else if((p.x > 0) && (p.x < 800) &&
-			(p.y > 0) && (p.y < 480))
+		else if((p.x > SKIING_X1) && (p.x < SKIING_X2) &&
+			(p.y > SKIING_Y1) && (p.y < SKIING_Y2))
 		{
-			current_menu_func = &NewTrip;
 			curMode = SKIING;
 			redraw = 1;
 			*redrawButtons = 1;
@@ -182,6 +176,7 @@ void MainMenu()
 		DrawMainMenu();
 		redraw = 0;
 	}
+
 	int i;
 	for(i=0; i<1000; i++);
 	Point p = GetRelease();
@@ -211,19 +206,24 @@ void PastTrips()
 	int i;
 	int maxLogs;
 	int maxEntries;
+
 	Point p;
 
 	//check that there is a log0
 	logExists = checkIfLog();
 
-	maxEntries = numEntries(logNum);
-
 	//the first log will have to always be 0
 	maxLogs = lastLog(0);
 
+	if(CurLogNum == -1)
+	{
+		CurLogNum = maxLogs-1;
+	}
+
 	//first time getting here we should set log to the most recent one
-	if (initial == 1)
-		logNum = maxLogs-1;
+
+	maxEntries = numEntries(CurLogNum);
+
 
 	//cover up the "please insert sd card" if it's still there
 	FilledRectangle(50,431,625,480, DARK_GREEN);
@@ -231,7 +231,7 @@ void PastTrips()
 	int myFileHandle;
 	char logname[20];
 
-	snprintf(logname, 20, "log%d.txt", logNum);
+	snprintf(logname, 20, "log%d.txt", CurLogNum);
 	printf("logname in pasttrips = %s\n", logname);
 
 	//cannot afford to be constantly opening and closing, so open just once here
@@ -251,15 +251,17 @@ void PastTrips()
 		DrawPastTrips(&redraw);
 	}
 
-	DrawTripData(maxLogs, myFileHandle, maxEntries, logNum, logExists);
-	DrawPath(logNum);
-
+	if(maxEntries >= 2)
+	{
+		DrawTripData(maxLogs, myFileHandle, maxEntries, CurLogNum, logExists);
+		DrawPath(CurLogNum);
+	}
 	WaitForTouch();
 
 	p = GetRelease();
 	//this is here to make sure the SD card is inserted, otherwise program will crash
 	Init_SDCard();
-	PrevNext(p, 0, maxLogs);
+	PrevNext(p, 0, maxLogs, &CurLogNum);
 	GetNextMenu(p);
 	current_menu_func();
 }
@@ -268,6 +270,7 @@ void NewTrip()
 {
 	int fileHandle;
 	int timeDelay;
+	int logNum;
 
 	char time[100];
 	char latitude[100];
@@ -284,6 +287,8 @@ void NewTrip()
 	if(redraw)
 		DrawGpsMenu(&redraw);
 
+	logNum = lastLog(0);
+
 	/* delay for debouncing screen */
 	int i;
 	for(i=0; i<10000; i++);
@@ -294,11 +299,11 @@ void NewTrip()
 
 	#ifdef DEBUG
 	int iteration = 0;
-	int logNum = 0;
 	#endif //DEBUG
 
 	while(1)
 	{
+bad_touch:
 		#ifdef DEBUG
 		printf("iteration = %d\n", iteration);
 		int r2 = rand()%100;
@@ -341,9 +346,9 @@ void NewTrip()
 
 		extractGpsTime(temp , time);
 		strcpy(temp, gpsdat);
-		extractGpsLatitude(temp, latitude);
+		float flatitude = extractGpsLatitude(temp, latitude);
 		strcpy(temp, gpsdat);
-		extractGpsLongitude(temp, longitude);
+		float flongitude = extractGpsLongitude(temp, longitude);
 		strcpy(temp, gpsdat);
 		extractGpsAltitude(temp,  altitude);
 
@@ -357,7 +362,7 @@ void NewTrip()
 
 		if (initializing == 0) {
 			strcpy(temp, gpsdat);
-			fileHandle = writeToSd(temp,logNum,sizeof(temp));
+			fileHandle = writeToSd(temp,logNum,strlen(temp));
 			while (fileHandle == -1) {
 				printf("Trying again, re-init sd-card\n");
 				Init_SDCard();
@@ -373,6 +378,8 @@ void NewTrip()
 
 		printf("before init is %lf, %d\n", initializing, initializing);
 		DrawGpsData(time, latitude, longitude, altitude, logname, curMode, &redrawButtons, &initializing);
+
+		updateRealTimePath(flatitude, flongitude);
 
 		#ifdef DEBUG
 		iteration++;
@@ -397,8 +404,13 @@ touched:
 
 	p = GetRelease();
 	ChangeSpeed(p, &redrawButtons);
-	GetNextMenu(p);
-	current_menu_func();
+	int _switch = GetNextMenu(p);
+	if(_switch)
+	{
+		current_menu_func();
+	}
+	else
+		goto bad_touch;
 }
 
 

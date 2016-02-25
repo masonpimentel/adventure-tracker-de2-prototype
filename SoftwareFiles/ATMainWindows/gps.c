@@ -151,13 +151,15 @@ void secondsToTime(char* buf, int seconds) {
 	printf("buf = %s\n", buf);
 }
 
-void extractGpsLatitude(char* GpsData, char* ret)
+float extractGpsLatitude(char* GpsData, char* ret)
 {
 	char* token;
 	char* target = "Latitude:";
+	char temp[128];
+	strcpy(temp, GpsData);
 
 
-	token = strtok(GpsData, " ");
+	token = strtok(temp, " ");
 
 	while(strcmp(token, target) != 0)
 	{
@@ -178,17 +180,23 @@ void extractGpsLatitude(char* GpsData, char* ret)
 	float fdegree = atof(degree);
 	float fminute = atof(minute);
 	float latitude = fdegree + fminute/(60.0);
-	char temp[64];
-	snprintf(temp, 64, "%f", latitude);
-	strcpy(ret, temp);
+	if(ret != NULL)
+	{
+		char temp[64];
+		snprintf(temp, 64, "%f", latitude);
+		strcpy(ret, temp);
+	}
+	return latitude;
 }
 
-void extractGpsLongitude(char* GpsData, char* ret)
+float extractGpsLongitude(char* GpsData, char* ret)
 {
 	char* token;
 	char* target = "Longitude:";
+	char temp[128];
+	strcpy(temp, GpsData);
 
-	token = strtok(GpsData, " ");
+	token = strtok(temp, " ");
 	while(strcmp(token, target) != 0)
 	{
 		token = strtok(NULL,  " ");
@@ -208,9 +216,14 @@ void extractGpsLongitude(char* GpsData, char* ret)
 	float fminute = atof(minute);
 
 	float longitude = fdegree + fminute/(60.0);
-	char temp[64];
-	snprintf(temp, 64, "%f", longitude);
-	strcpy(ret, temp);
+
+	if(ret != NULL)
+	{
+		char temp[64];
+		snprintf(temp, 64, "%f", longitude);
+		strcpy(ret, temp);
+	}
+	return longitude;
 
 }
 

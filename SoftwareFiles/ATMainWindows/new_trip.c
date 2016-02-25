@@ -71,11 +71,11 @@ void DrawGpsMenu(int *redraw)
 	DrawButton(0, 0, 800, 40, "Logging trip data...", sizeof ("Logging trip data..."), WHITE, BLACK);
 
 	/* draw data screen and position screen */
-	DrawButton(50, 50, 400, 430, "", 0, BLACK, GRAY);
-	DrawButton(400, 50, 750, 430, "", 0, BLACK, SADDLE_BROWN);
+	DrawButton(20, 50, 400, 430, "", 0, BLACK, GRAY);
+	DrawButton(400, 50, 780, 430, "", 0, BLACK, SADDLE_BROWN);
 	VLine(400, 50, 380, BLACK);
-	Triangle(565, 240, 585, 240, 575, 220, BLACK);
-	Fill(575, 230, BLACK, BLACK);
+	Triangle(585, 235, 595, 235, 590, 245, BLACK);
+	Fill(590, 240, BLACK, BLACK);
 
 	/* Back to main menu button */
 	DrawButton(650, 430, 800, 480, "End Trip", sizeof("End Trip")-1, BLACK, BURLY_WOOD);

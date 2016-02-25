@@ -12,6 +12,7 @@
 #include <string.h>
 #include "sdcard.h"
 #include <stdio.h>
+#include "gps.h"
 
 int RPIndex = 0;
 RTPoint REAL_POINTS[MAX_REAL_POINTS];
@@ -29,35 +30,6 @@ RTPoint REAL_POINTS[MAX_REAL_POINTS];
 int RTPixels_per_degree_x = 1900000;
 int RTPixels_per_degree_y = 1900000;
 
-float ExtractLongitude(char* gpsdat)
-{
-	char* delim = " ";
-	char temp[100];
-	strcpy(temp, gpsdat);
-	char* token = strtok(temp, delim);
-	char* match = "Longitude:";
-	while(strcmp(token, match) != 0)
-	{
-		token = strtok(0, delim);
-	}
-	token = strtok(0, delim);
-	return atof(token);
-}
-
-float ExtractLatitude(char* gpsdat)
-{
-	char* delim = " ";
-	char temp[100];
-	strcpy(temp, gpsdat);
-	char* token = strtok(temp, delim);
-	char* match = "Latitude:";
-	while(strcmp(token, match) != 0)
-	{
-		token = strtok(0, delim);
-	}
-	token = strtok(0, delim);
-	return atof(token);
-}
 
 float ExtractAltitude(char* gpsdat)
 {
@@ -94,8 +66,8 @@ int GetPathInfo(path_info* pathInfo, int log)
 	nextEntry(buf, fd);
 	while(buf[0] != '\0')
 	{
-		float longitude = ExtractLongitude(buf);
-		float latitude = ExtractLatitude(buf);
+		float longitude = extractGpsLongitude(buf, NULL);
+		float latitude = extractGpsLatitude(buf, NULL);
 		if(latitude > pathInfo->max_lat)
 		{
 			pathInfo->max_lat = latitude;
@@ -116,8 +88,8 @@ int GetPathInfo(path_info* pathInfo, int log)
 	}
 	pathInfo->delta_long = pathInfo->max_long - pathInfo->min_long;
 	pathInfo->delta_lat = pathInfo->max_lat - pathInfo->min_lat;
-	pathInfo->pixels_per_division_x = 350/pathInfo->delta_long;
-	pathInfo->pixels_per_division_y = 350/pathInfo->delta_lat;
+	pathInfo->pixels_per_division_x = 370/pathInfo->delta_long;
+	pathInfo->pixels_per_division_y = 370/pathInfo->delta_lat;
 	alt_up_sd_card_fclose(fd);
 
 	return 0;
@@ -127,13 +99,15 @@ int GetPathInfo(path_info* pathInfo, int log)
 
 void GpsToPoint(char* gpsdat, path_info* pathInfo, XYPixel* current_point)
 {
-	float longitude = ExtractLongitude(gpsdat);
-	float latitude = ExtractLatitude(gpsdat);
+	float longitude = extractGpsLongitude(gpsdat, NULL);
+	float latitude = extractGpsLatitude(gpsdat, NULL);
 
 	int x = (longitude - pathInfo->min_long) * (pathInfo->pixels_per_division_x);
 	int y = (latitude - pathInfo->min_lat) * (pathInfo->pixels_per_division_y);
-	y+=50;
-	x+=400;
+	/* shhhhhh */
+	x *= -1;
+	y+=55;
+	x+=775;
 
 	current_point->x = x;
 	current_point->y = y;
@@ -222,6 +196,8 @@ void drawRTPath()
 	RTPoint rtpCurrent, rtpNext;
 	/* clear the previous path */
 	DrawButton(400, 50, 780, 430, "", 0, BLACK, SADDLE_BROWN);
+	Triangle(585, 235, 595, 235, 590, 245, BLACK);
+	Fill(590, 240, BLACK, BLACK);
 	while(i!=RPIndex){
 		rtpCurrent = REAL_POINTS[i];
 		rtpNext = REAL_POINTS[(i+1)%MAX_REAL_POINTS];
