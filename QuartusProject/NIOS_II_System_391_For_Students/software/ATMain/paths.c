@@ -190,7 +190,10 @@ int isValidPixel(XYPixel p)
 {
 	return((p.x < 780 && p.x > 400) && (p.y > 50 && p.y < 430));
 }
-
+void InitRTPath()
+{
+	memset(REAL_POINTS, 0, sizeof(RTPoint) * MAX_REAL_POINTS);
+}
 void drawRTPath()
 {
 	int i = (RPIndex + 1)%MAX_REAL_POINTS;

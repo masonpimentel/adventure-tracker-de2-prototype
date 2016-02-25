@@ -89,19 +89,19 @@ int writeToSd(char* string, char log, int length) {
 
 		strcpy(modified, string);
 		strcat(modified, " x");
-		printf("Writing '%s' to SD card\n", modified);
+		//printf("Writing '%s' to SD card\n", modified);
 		length = strlen(modified);
 		for(i = 0; i < length; i ++) {
 			if(alt_up_sd_card_write(myFileHandle,modified[i]) == false){
-				printf("Error writing to file...\n");
+				//printf("Error writing to file...\n");
 				return -1;
 			}
 		}
-		printf("Done!!!\n");
+		//printf("Done!!!\n");
 		alt_up_sd_card_fclose(myFileHandle);
 	}
 	else {
-		printf("File not opened for writing\n");
+		//printf("File not opened for writing\n");
 		Init_SDCard();
 	}
 	return myFileHandle;

@@ -42,6 +42,7 @@ typedef struct {
 int DrawPath(int log);
 float ExtractAltitude(char* gpsdat);
 void updateRealTimePath(float latitude, float longitude);
+void InitRTPath(void);
 
 
 #endif /* PATHS_H_ */

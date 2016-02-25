@@ -37,19 +37,19 @@ void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, ch
 			backgroundColor = GREEN;
 		else
 			backgroundColor = BLUE;
-		DrawButton(62,180,163,205, "Walking", sizeof("Walking"), WHITE, backgroundColor);
+		DrawButton(62,170,163,215, "Walking", sizeof("Walking"), WHITE, backgroundColor);
 		//biking
 		if (curMode == BIKING)
 			backgroundColor = GREEN;
 		else
 			backgroundColor = BLUE;
-		DrawButton(174,180,274,205, "Biking", sizeof("Biking"), WHITE, backgroundColor);
+		DrawButton(174,170,274,215, "Biking", sizeof("Biking"), WHITE, backgroundColor);
 		//skiing
 		if (curMode == SKIING)
 			backgroundColor = GREEN;
 		else
 			backgroundColor = BLUE;
-		DrawButton(287,180,386,205, "Skiing", sizeof("Skiing"), WHITE, backgroundColor);
+		DrawButton(287,170,386,215, "Skiing", sizeof("Skiing"), WHITE, backgroundColor);
 
 		*redrawButtons = 0;
 	}
@@ -57,7 +57,7 @@ void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, ch
 	FilledRectangle(50,431,625,480, DARK_GREEN);
 
 	//if no fix yet
-	printf("initializing is %lf, %d\n", *initializing, *initializing);
+	//printf("initializing is %lf, %d\n", *initializing, *initializing);
 	if (*initializing == 1) {
 		DrawString(80,235, "Attempting to get a fix...", sizeof("Attempting to get a fix..."), RED, GRAY);
 		printf("here!\n");

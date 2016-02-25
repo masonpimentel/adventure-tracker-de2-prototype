@@ -7,6 +7,7 @@
 
 #include "past_trips.h"
 #include "graphics.h"
+#include "gps.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -183,39 +184,40 @@ void DrawTripData(int maxLogs, int fd, int maxEntries, int logNum, int logExists
 	getLogEntry(logNum, start, 0, 0, 0, 0, fd);
 	printf("start = %s\n", start);
 	strcpy(tempStart, start);
-	extractLatitudeStr(tempStart,startLat);
+	extractGpsLatitude(tempStart,startLat);
 	startLatDbl = atof(startLat);
 	printf("start lat = %lf\n", startLatDbl);
 	strcpy(tempStart, start);
-	extractLongitudeStr(tempStart,startLong);
+	extractGpsLongitude(tempStart,startLong);
 	startLongDbl = atof(startLong);
 	printf("start long = %lf\n", startLongDbl);
 
 	for(i=1; i<maxEntries; i++) {
 		memset(next,0,sizeof(next));
 		getLogEntry(logNum, next, 0, 0, 0, 0, fd);
-		printf("next = %s\n", next);
+		//printf("next = %s\n", next);
 		strcpy(tempNext, next);
-		extractLatitudeStr(tempNext,nextLat);
-		nextLatDbl = atof(nextLat);
-		printf("next lat = %lf\n", nextLatDbl);
-		strcpy(tempNext, next);
-		extractLongitudeStr(tempNext,nextLong);
-		nextLongDbl = atof(nextLong);
-		printf("next long = %lf\n", nextLongDbl);
+		nextLatDbl = extractGpsLatitude(tempNext,nextLat);
 
-		printf("lat1 = %lf\n", startLatDbl);
-		printf("long1 = %lf\n", startLongDbl);
-		printf("lat2 = %lf\n", nextLatDbl);
-		printf("long2 = %lf\n", nextLongDbl);
+		//printf("next lat = %lf\n", nextLatDbl);
+		strcpy(tempNext, next);
+		nextLongDbl = extractGpsLongitude(tempNext,nextLong);
+
+		//printf("next long = %lf\n", nextLongDbl);
+
+		//printf("lat1 = %lf\n", startLatDbl);
+		//printf("long1 = %lf\n", startLongDbl);
+		//printf("lat2 = %lf\n", nextLatDbl);
+		//printf("long2 = %lf\n", nextLongDbl);
 
 		curDistance = distance(startLatDbl,startLongDbl,nextLatDbl,nextLongDbl, 'K');
-		printf("curdistance = %lf\n", curDistance);
+		//printf("curdistance = %lf\n", curDistance);
 
 		startLatDbl = nextLatDbl;
 		startLongDbl = nextLongDbl;
 
 		totalDistance = totalDistance + curDistance;
+		//printf("total distance = %f", totalDistance);
 	}
 
 	printf("total distance = %lf\n", totalDistance);

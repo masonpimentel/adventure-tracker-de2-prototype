@@ -81,19 +81,19 @@ typedef enum
 /* polling speed */
 
 #define WALKING_X1			62
-#define WALKING_Y1			180
+#define WALKING_Y1			170
 #define WALKING_X2			163
-#define WALKING_Y2			205
+#define WALKING_Y2			215
 
 #define BIKING_X1			174
-#define BIKING_Y1			180
+#define BIKING_Y1			170
 #define BIKING_X2			274
-#define BIKING_Y2			205
+#define BIKING_Y2			215
 
 #define SKIING_X1			287
-#define SKIING_Y1			180
+#define SKIING_Y1			170
 #define SKIING_X2			386
-#define SKIING_Y2			205
+#define SKIING_Y2			215
 
 #define WALKING				0
 #define BIKING				1

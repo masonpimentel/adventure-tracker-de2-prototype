@@ -282,6 +282,8 @@ void NewTrip()
 	char latitude[100];
 	char longitude[100];
 	char altitude[100];
+	redrawButtons = 1;
+	InitRTPath();
 	//snprintf(time, 100,"4:20: ");
 	//snprintf(latitude, 100, "S52* 26' 59.79\"");
 	//snprintf(longitude, 100, "N13* 23' 36.11\"");
@@ -347,7 +349,7 @@ bad_touch:
 		#ifndef DEBUG
 		gpsdat = getGpsData(&reinit);
 		strcpy(temp, gpsdat);
-		printf("%s\n", gpsdat);
+		//printf("%s\n", gpsdat);
 		#endif
 
 		extractGpsTime(temp , time);
@@ -370,19 +372,19 @@ bad_touch:
 			strcpy(temp, gpsdat);
 			fileHandle = writeToSd(temp,logNum,strlen(temp));
 			while (fileHandle == -1) {
-				printf("Trying again, re-init sd-card\n");
+				//printf("Trying again, re-init sd-card\n");
 				Init_SDCard();
 				strcpy(temp,gpsdat);
 				fileHandle = writeToSd(temp,logNum,sizeof(temp));
 			}
 		}
-		else
-			printf("Not writing to SD!\n");
+		//else
+			//printf("Not writing to SD!\n");
 
 		char logname[20];
 		sprintf(logname, "log%d", logNum);
 
-		printf("before init is %lf, %d\n", initializing, initializing);
+		//printf("before init is %lf, %d\n", initializing, initializing);
 		DrawGpsData(time, latitude, longitude, altitude, logname, curMode, &redrawButtons, &initializing);
 
 		updateRealTimePath(flatitude, flongitude);
