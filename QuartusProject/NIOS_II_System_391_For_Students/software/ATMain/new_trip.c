@@ -57,10 +57,12 @@ void DrawGpsData(char* time, char* latitude, char* longitude, char* altitude, ch
 	FilledRectangle(50,431,625,480, DARK_GREEN);
 
 	//if no fix yet
-	//printf("initializing is %lf, %d\n", *initializing, *initializing);
 	if (*initializing == 1) {
 		DrawString(80,235, "Attempting to get a fix...", sizeof("Attempting to get a fix..."), RED, GRAY);
-		printf("here!\n");
+	}
+	else
+	{
+		FilledRectangle(70, 220, 380, 270, GRAY);
 	}
 }
 

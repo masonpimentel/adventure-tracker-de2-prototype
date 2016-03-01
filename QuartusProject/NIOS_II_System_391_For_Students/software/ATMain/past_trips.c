@@ -47,8 +47,8 @@ void extractLongitudeStr(char* GpsData, char* ret)
 void DrawTripLabels()
 {
 	DrawString(60,205,"Total Time: ", sizeof("Total Time: ")-1, BLACK, GRAY);
-	DrawString(60, 275, "Total Distance: ", sizeof("Total Distance: ")-1,BLACK, GRAY);
-	DrawString(60, 345, "Total Change in Altitude: ", sizeof("Total Change in Altitude: ")-1,BLACK, GRAY);
+	DrawString(60, 275, "Total Distance (km): ", sizeof("Total Distance: ")-1,BLACK, GRAY);
+	DrawString(60, 345, "Total Change in Altitude (m): ", sizeof("Total Change in Altitude: ")-1,BLACK, GRAY);
 }
 
 void DrawPastTrips(int *redraw)
