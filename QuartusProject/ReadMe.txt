@@ -1,1 +1,0 @@
-serial.c can be found in Exercise1.3\NIOS_II_System_391_For_Students\software\serial2 
