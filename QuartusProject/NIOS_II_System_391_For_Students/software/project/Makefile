@@ -151,12 +151,12 @@ C_SRCS += main.c
 C_SRCS += menus.c
 C_SRCS += misc.c
 C_SRCS += sdcard.c
-C_SRCS += serial_new.c
 C_SRCS += paths.c
 C_SRCS += past_trips.c
 C_SRCS += new_trip.c
 C_SRCS += distance.c
 C_SRCS += drawing.c
+C_SRCS += touch.c
 CXX_SRCS :=
 ASM_SRCS :=
 

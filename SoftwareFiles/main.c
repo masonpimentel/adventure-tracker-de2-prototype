@@ -6,20 +6,18 @@
  */
 
 
-#include "graphics.h"
 #include "touch.h"
+#include "menus.h"
+#include "gps.h"
+#include "sdcard.h"
 #include <stdio.h>
-
-
 
 int main()
 {
 	Init_Touch();
-	DrawMainMenu();
-	Point p;
-	while(1)
-	{
-		printf("RX = %x, TX = %x\n", Touch_RX, Touch_TX);
-	}
+	Init_Gps();
+	Init_SDCard();
+	current_menu_func = &NewTrip;
+	current_menu_func();
 	return 0;
 }
