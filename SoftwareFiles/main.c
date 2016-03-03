@@ -17,7 +17,7 @@ int main()
 	Init_Touch();
 	Init_Gps();
 	Init_SDCard();
-	current_menu_func = &NewTrip;
+	current_menu_func = &MainMenu;
 	current_menu_func();
 	return 0;
 }

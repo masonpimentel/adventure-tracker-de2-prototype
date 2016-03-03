@@ -63,29 +63,7 @@ void Init_Gps(void)
 	Gps_Control = 0x15;
 	Gps_Baud = 0x06;
 }
-/* Delay loops
- */
-void smallDelay() {
-	int delay = 0;
-	while (delay < 2000000)
-	{
-		delay++;
-	}
-}
-void longerDelay() {
-	int delay = 0;
-	while (delay < 10000000)
-	{
-		delay++;
-	}
-}
-void evenLongerDelay() {
-	int delay = 0;
-	while (delay < 20000000)
-	{
-		delay++;
-	}
-}
+
 
 void extractGpsTime(char* GpsData, char* ret)
 {
