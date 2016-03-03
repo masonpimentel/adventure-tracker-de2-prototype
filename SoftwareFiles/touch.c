@@ -74,88 +74,11 @@ int RS232TestForReceivedData(int reg)
     return bit;
 }
 
-/* Initialises the RS232 port by writing to RS232_Control and RS232_Baud
- * registers.
+
+/* Initializes the Touch Controller
  *
- * @param: none
  * @return: none
  */
-void Init_RS232(void)
-{
-    RS232_Control = 0x15;
-    RS232_Baud = 0x01;
-}
-
-/*
- * Finds the value of the transmit bit in 6850 status register.
- * Polls (every 500ms) until it becomes "1".
- * Writes "character" to the 6850 TxData register.
- *
- * @param: int character - integer to transmit
- * @return: none
- */
-void putcharRS232(int character)
-{
-    int tx_bit = 0;
-    int status = RS232_Status;
-
-    printf("RS232 status = %d = ", status);
-    print_binary(status);
-
-    // poll transmit bit in 6850 status register. Wait for it to become '1'
-    tx_bit = transmit_bit(status);
-    printf("\nTx_bit = %d\n", tx_bit);
-    while(tx_bit == 0)
-    {
-        // sleep(500); // for some reason can't link unistd.h
-        int delay =0;
-        while (delay < 200000)
-        {
-            delay++;
-        }
-        tx_bit = transmit_bit(RS232_Status);
-        printf("\nTx_bit = %d\n", tx_bit);
-    }
-
-    // write character to the 6850 TxData register to output the character
-    printf("Writing %d to TxData register.\n", character);
-    RS232_TxData =  character;
-
-    return;
-}
-
-/*
- * Finds the value of the receive bit in 6850 status register.
- * Polls until it becomes "1".
- * Writes "character" to the 6850 TxData register.
- * @param: int character - integer to transmit
- * @return: none
- */
-int getcharRS232(void)
-{
-    int character, rx_bit;
-    int status = RS232_Status;
-
-    printf("RS232 status = %d = ", status);
-    print_binary(status);
-
-    // poll Rx bit in 6850 status register. Wait for it to become '1'.
-    rx_bit = RS232TestForReceivedData(RS232_Status);
-    printf("\nRx_bit = %d\n", rx_bit);
-    while(rx_bit == 0)
-    {
-        rx_bit = RS232TestForReceivedData(RS232_Status);
-        printf("\nRx_bit = %d\n", rx_bit);
-    }
-
-    // read received character from 6850 RxData register.
-    character = RS232_RxData;
-    printf("Read %d from RxData register.\n", character);
-    return character;
-}
-
-
-
 void Init_Touch(void)
 {
     // From ex 1.3 documents
