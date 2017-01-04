@@ -25,9 +25,9 @@ In the past trips page, the user is shown:
 * Total cumulative stats including total time, distance and change in altitude
 * The full drawn path starting at the S and ending at E
 
-When first entering this page after boot up the most recent log file is shown. What is shown below is noise from the GPS, as the antenna was kept stationary the whole time. The scale of the window is 10m to be able to see the path. 
+When first entering this page after boot up the most recent log file is shown.
 
-<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/20160301_122751.jpg" width="800"><br>_Past trips_
+<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/20160301_122751.jpg" width="500"><br>_Past trips_
 
 The user is able to press on “Prev” and “Next” to cycle between log files on the SD card. Pressing Next when displaying the last log file wraps around back to log 0. Pressing Prev when displaying log 0 wraps forward to the most recent log file. The user is able to return to the Main Menu by pressing the button on the bottom right.
 
@@ -41,7 +41,7 @@ In the new trips page the user is shown:
 The user is able to press on “Walking”, “Biking” and “Skiing” to cycle between the three different location sampling rates. Walking corresponds to a rate of every 5 seconds, biking every 3 seconds and skiing every 2 seconds. By pressing “End Trip” on the bottom right, the trip is ended, and upon re-entering this page from the main menu, a new log file is created.
 
 
-<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/20160301_133041.jpg" width="500"><br>_New trip_
+<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/20160301_133041.jpg" width="500"><br>_New trip_<br>Note that it is not shown here, but the feature to also log points of interest was added to this page.
 
 <img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/20160301_133221.jpg" width="500"><br>_Biking mode_
 
