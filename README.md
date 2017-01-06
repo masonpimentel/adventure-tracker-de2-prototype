@@ -57,9 +57,9 @@ In the new trips page the user is shown:
 
 The user is able to change the name of the device and the PIN here.
 
-<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/Bluetooth.png" width="250"><br>_Bluetooth settings
+<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/Bluetooth.png" width="250"><br>_Bluetooth settings_
 
-<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/Bluetooth2.png" width="250"><br>_Changing PIN
+<img src="https://github.com/snxfz947/AdventureTrackerDE2/blob/master/Images/Bluetooth2.png" width="250"><br>_Changing PIN_
 
 ## Hardware Block Diagram
 
